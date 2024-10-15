@@ -3,9 +3,11 @@ Asymmetry Index pipeline for evaluation of epilepsy
 v1.0.0 (October 15, 2024)
 
 Custom scripts by Anton Fomenko MD FRCSC
-Epilepsy Neurosurgery Fellow, University of TOronto
+Epilepsy Neurosurgery Fellow, University of Toronto
+
 
 REQUIREMENTS:
+
 1.MATLAB v2017 or higher
 
 2.SPM12 toolbox https://www.fil.ion.ucl.ac.uk/spm/software/spm12/
@@ -40,4 +42,4 @@ INTERPRETING RESULTS:
 
 
 
-Reference: Aslam S, Damodaran N, Rajeshkannan R, Sarma M, Gopinath S, Pillai A. Asymmetry index in anatomically symmetrized FDG-PET for improved epileptogenic focus detection in pharmacoresistant epilepsy. J Neurosurg. 2022 Aug 5;138(3):828-836. doi: 10.3171/2022.6.JNS22717. PMID: 35932262![image](https://github.com/user-attachments/assets/bf039943-c8e3-407d-8d09-aec1d09fc3eb)
+Reference: Aslam S, Damodaran N, Rajeshkannan R, Sarma M, Gopinath S, Pillai A. Asymmetry index in anatomically symmetrized FDG-PET for improved epileptogenic focus detection in pharmacoresistant epilepsy. J Neurosurg. 2022 Aug 5;138(3):828-836. doi: 10.3171/2022.6.JNS22717. PMID: 35932262

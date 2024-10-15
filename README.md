@@ -34,8 +34,5 @@ INTERPRETING RESULTS:
 3. Z3,4,5 with "clustered" suffix can be used instead if only want to see big clusters of asymmetry
 
 
-![image](https://github.com/user-attachments/assets/38264626-1027-4ee4-8022-0c0029de5def)
-
-
 
 Reference: Aslam S, Damodaran N, Rajeshkannan R, Sarma M, Gopinath S, Pillai A. Asymmetry index in anatomically symmetrized FDG-PET for improved epileptogenic focus detection in pharmacoresistant epilepsy. J Neurosurg. 2022 Aug 5;138(3):828-836. doi: 10.3171/2022.6.JNS22717. PMID: 35932262![image](https://github.com/user-attachments/assets/bf039943-c8e3-407d-8d09-aec1d09fc3eb)

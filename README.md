@@ -7,10 +7,15 @@ Epilepsy Neurosurgery Fellow, University of TOronto
 
 REQUIREMENTS:
 1.MATLAB v2017 or higher
+
 2.SPM12 toolbox https://www.fil.ion.ucl.ac.uk/spm/software/spm12/
+
 3. Exported PET, T1 MRI, and FLAIR MRI sequences of the patient (in NIFTI or DICOM)
+
 4. Scripts attached to this repository
+
 5. Optional but desirable: MRIcron viewer  https://www.nitrc.org/projects/mricron
+
 5. Approximately 1 hour to run the full pipeline on a personal laptop. Dedicated desktop machines will perform faster
 
 GUIDELINE FOR USE:

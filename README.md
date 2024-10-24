@@ -36,7 +36,7 @@ GUIDELINE FOR USE:
 
 VIEWING RESULTS:
 
-1. The viewresults.m script will set the anatomical unflipped T1 wwT1_u_rc1T1_Template.nii as background..
+1. The viewer.m script will set the anatomical unflipped T1 wwT1_u_rc1T1_Template.nii as background..
 2. The Z3, Z4, and Z5.nii overlays are simultaneously superimposed to see the asymmetrical regions in order of strength of asymmetry. 
 3. Z3,4,5 with "clustered" suffix can be used instead if only want to see big clusters of asymmetry
 

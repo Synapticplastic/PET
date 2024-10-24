@@ -32,12 +32,12 @@ GUIDELINE FOR USE:
 7. Run Step 2.m    This will rigidly coregister the PET and FLAIR images to the T1 image.  The checkreg tool will pop up at the end. Verify the images all align
 8. Run Step 3.m   This will flip all the images Left to Right and save as flipX.nii.  Need to check the results to ensure they flipped correctly.
 9. Run Step 4.m  This will automatically call step4_job.m (which should be sitting in your directory for a complex set of gray/white matter mapping and DARTEL template creation.  THIS STEP TAKES ABOUT 20-30 MINUTES OR SO on a laptop and will create many .nii files
-10. Run Step 5.m   This will warp and process the results further to create a set of NIFTI overlays which can be manually mapped over your original T1 scan
+10. Run Step 5.m   This will warp and process the results further to create a set of NIFTI overlays which can be manually mapped over your original T1 scan. This will also overlay the results onto the T1 using a viewer
 
-INTERPRETING RESULTS:
+VIEWING RESULTS:
 
-1. Open wwT1_u_rc1T1_Template.nii using any viewer to view the T1 image. Alternatively can open the wwPet.nii file if the background is desired to be the PET scan.
-2. "Add overlay", and add the Z3, Z4, and Z5.nii overlays to see the asymmetrical regions in order of strength of asymmetry. Set colors for a nice heatmap (will automate this later)
+1. The viewresults.m script will set the anatomical unflipped T1 wwT1_u_rc1T1_Template.nii as background..
+2. The Z3, Z4, and Z5.nii overlays are simultaneously superimposed to see the asymmetrical regions in order of strength of asymmetry. 
 3. Z3,4,5 with "clustered" suffix can be used instead if only want to see big clusters of asymmetry
 
 

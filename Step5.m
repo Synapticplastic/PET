@@ -36,7 +36,7 @@ spm_jobman('run', matlabbatch);
 flowfield = {'u_rc1flipT1_Template.nii'};
 images = {
     {
-        'flipPET.nii'
+        'flipcPET.nii'
     }
 };
 
@@ -106,7 +106,7 @@ spm_jobman('run', matlabbatch);
 flowfield = {'u_rc1T1_Template.nii'};
 images = {
     
-        'wflipPET.nii'
+        'wflipcPET.nii'
     
 };
 
@@ -149,12 +149,12 @@ spm_jobman('run', matlabbatch);
 
 
 
-spm_smooth('wwflipPET_u_rc1T1_Template.nii', 'swwflipPET.nii', [8 8 8]);
+spm_smooth('wwflipcPET_u_rc1T1_Template.nii', 'swwflipcPET.nii', [8 8 8]);
 spm_smooth('wwPET_u_rc1T1_Template.nii', 'swwPET.nii', [8 8 8]);
 
 %% CALCULATE AI image using the two PET images
 
-spm_imcalc({'swwflipPET.nii', 'swwPET.nii'}, 'AIraw.nii', '(i1 - i2) ./ max(i1, i2)');
+spm_imcalc({'swwflipcPET.nii', 'swwPET.nii'}, 'AIraw.nii', '(i1 - i2) ./ max(i1, i2)');
 
 %% REstrict to Gray matter
 

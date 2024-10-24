@@ -6,33 +6,36 @@
 % impexp_NiftiMrStruct NiftiMrStruct - Unknown
 %-----------------------------------------------------------------------
 matlabbatch{1}.spm.spatial.preproc.channel.vols = {
-                                                   'C:\Users\Anton Fomenko\Desktop\TESTBATCHPET\DICOM\T1.nii,1'
-                                                   'C:\Users\Anton Fomenko\Desktop\TESTBATCHPET\DICOM\cFLAIR.nii,1'
-                                                   };
+                                                   'T1.nii,1'
+                                                   'cFLAIR.nii,1'
+                                                   };                                              
+                                            
+                                               
+                                               
 matlabbatch{1}.spm.spatial.preproc.channel.biasreg = 0.001;
 matlabbatch{1}.spm.spatial.preproc.channel.biasfwhm = 60;
 matlabbatch{1}.spm.spatial.preproc.channel.write = [0 0];
-matlabbatch{1}.spm.spatial.preproc.tissue(1).tpm = {'C:\Users\Anton Fomenko\Documents\MATLAB\spm12\spm12\tpm\TPM.nii,1'};
+matlabbatch{1}.spm.spatial.preproc.tissue(1).tpm = {'TPM.nii,1'};
 matlabbatch{1}.spm.spatial.preproc.tissue(1).ngaus = 1;
 matlabbatch{1}.spm.spatial.preproc.tissue(1).native = [1 1];
 matlabbatch{1}.spm.spatial.preproc.tissue(1).warped = [0 0];
-matlabbatch{1}.spm.spatial.preproc.tissue(2).tpm = {'C:\Users\Anton Fomenko\Documents\MATLAB\spm12\spm12\tpm\TPM.nii,2'};
+matlabbatch{1}.spm.spatial.preproc.tissue(2).tpm = {'TPM.nii,2'};
 matlabbatch{1}.spm.spatial.preproc.tissue(2).ngaus = 1;
 matlabbatch{1}.spm.spatial.preproc.tissue(2).native = [1 1];
 matlabbatch{1}.spm.spatial.preproc.tissue(2).warped = [0 0];
-matlabbatch{1}.spm.spatial.preproc.tissue(3).tpm = {'C:\Users\Anton Fomenko\Documents\MATLAB\spm12\spm12\tpm\TPM.nii,3'};
+matlabbatch{1}.spm.spatial.preproc.tissue(3).tpm = {'TPM.nii,3'};
 matlabbatch{1}.spm.spatial.preproc.tissue(3).ngaus = 2;
 matlabbatch{1}.spm.spatial.preproc.tissue(3).native = [0 0];
 matlabbatch{1}.spm.spatial.preproc.tissue(3).warped = [0 0];
-matlabbatch{1}.spm.spatial.preproc.tissue(4).tpm = {'C:\Users\Anton Fomenko\Documents\MATLAB\spm12\spm12\tpm\TPM.nii,4'};
+matlabbatch{1}.spm.spatial.preproc.tissue(4).tpm = {'TPM.nii,4'};
 matlabbatch{1}.spm.spatial.preproc.tissue(4).ngaus = 3;
 matlabbatch{1}.spm.spatial.preproc.tissue(4).native = [0 0];
 matlabbatch{1}.spm.spatial.preproc.tissue(4).warped = [0 0];
-matlabbatch{1}.spm.spatial.preproc.tissue(5).tpm = {'C:\Users\Anton Fomenko\Documents\MATLAB\spm12\spm12\tpm\TPM.nii,5'};
+matlabbatch{1}.spm.spatial.preproc.tissue(5).tpm = {'TPM.nii,5'};
 matlabbatch{1}.spm.spatial.preproc.tissue(5).ngaus = 4;
 matlabbatch{1}.spm.spatial.preproc.tissue(5).native = [0 0];
 matlabbatch{1}.spm.spatial.preproc.tissue(5).warped = [0 0];
-matlabbatch{1}.spm.spatial.preproc.tissue(6).tpm = {'C:\Users\Anton Fomenko\Documents\MATLAB\spm12\spm12\tpm\TPM.nii,6'};
+matlabbatch{1}.spm.spatial.preproc.tissue(6).tpm = {'TPM.nii,6'};
 matlabbatch{1}.spm.spatial.preproc.tissue(6).ngaus = 2;
 matlabbatch{1}.spm.spatial.preproc.tissue(6).native = [0 0];
 matlabbatch{1}.spm.spatial.preproc.tissue(6).warped = [0 0];
@@ -46,34 +49,40 @@ matlabbatch{1}.spm.spatial.preproc.warp.write = [0 0];
 matlabbatch{1}.spm.spatial.preproc.warp.vox = NaN;
 matlabbatch{1}.spm.spatial.preproc.warp.bb = [NaN NaN NaN
                                               NaN NaN NaN];
+                                          
+pause(1)                                
+  disp('Finished creating Gray/White matter maps of unflipped images. Now proceeding with flipped images......');
+                                      
 matlabbatch{2}.spm.spatial.preproc.channel.vols = {
-                                                   'C:\Users\Anton Fomenko\Desktop\TESTBATCHPET\DICOM\flipT1.nii,1'
-                                                   'C:\Users\Anton Fomenko\Desktop\TESTBATCHPET\DICOM\flipFLAIR.nii,1'
+                                                   'flipT1.nii,1'
+                                                   'flipcFLAIR.nii,1'
                                                    };
+        
+                           
 matlabbatch{2}.spm.spatial.preproc.channel.biasreg = 0.001;
 matlabbatch{2}.spm.spatial.preproc.channel.biasfwhm = 60;
 matlabbatch{2}.spm.spatial.preproc.channel.write = [0 0];
-matlabbatch{2}.spm.spatial.preproc.tissue(1).tpm = {'C:\Users\Anton Fomenko\Documents\MATLAB\spm12\spm12\tpm\TPM.nii,1'};
+matlabbatch{2}.spm.spatial.preproc.tissue(1).tpm = {'TPM.nii,1'};
 matlabbatch{2}.spm.spatial.preproc.tissue(1).ngaus = 1;
 matlabbatch{2}.spm.spatial.preproc.tissue(1).native = [1 1];
 matlabbatch{2}.spm.spatial.preproc.tissue(1).warped = [0 0];
-matlabbatch{2}.spm.spatial.preproc.tissue(2).tpm = {'C:\Users\Anton Fomenko\Documents\MATLAB\spm12\spm12\tpm\TPM.nii,2'};
+matlabbatch{2}.spm.spatial.preproc.tissue(2).tpm = {'TPM.nii,2'};
 matlabbatch{2}.spm.spatial.preproc.tissue(2).ngaus = 1;
 matlabbatch{2}.spm.spatial.preproc.tissue(2).native = [1 1];
 matlabbatch{2}.spm.spatial.preproc.tissue(2).warped = [0 0];
-matlabbatch{2}.spm.spatial.preproc.tissue(3).tpm = {'C:\Users\Anton Fomenko\Documents\MATLAB\spm12\spm12\tpm\TPM.nii,3'};
+matlabbatch{2}.spm.spatial.preproc.tissue(3).tpm = {'TPM.nii,3'};
 matlabbatch{2}.spm.spatial.preproc.tissue(3).ngaus = 2;
 matlabbatch{2}.spm.spatial.preproc.tissue(3).native = [0 0];
 matlabbatch{2}.spm.spatial.preproc.tissue(3).warped = [0 0];
-matlabbatch{2}.spm.spatial.preproc.tissue(4).tpm = {'C:\Users\Anton Fomenko\Documents\MATLAB\spm12\spm12\tpm\TPM.nii,4'};
+matlabbatch{2}.spm.spatial.preproc.tissue(4).tpm = {'TPM.nii,4'};
 matlabbatch{2}.spm.spatial.preproc.tissue(4).ngaus = 3;
 matlabbatch{2}.spm.spatial.preproc.tissue(4).native = [0 0];
 matlabbatch{2}.spm.spatial.preproc.tissue(4).warped = [0 0];
-matlabbatch{2}.spm.spatial.preproc.tissue(5).tpm = {'C:\Users\Anton Fomenko\Documents\MATLAB\spm12\spm12\tpm\TPM.nii,5'};
+matlabbatch{2}.spm.spatial.preproc.tissue(5).tpm = {'TPM.nii,5'};
 matlabbatch{2}.spm.spatial.preproc.tissue(5).ngaus = 4;
 matlabbatch{2}.spm.spatial.preproc.tissue(5).native = [0 0];
 matlabbatch{2}.spm.spatial.preproc.tissue(5).warped = [0 0];
-matlabbatch{2}.spm.spatial.preproc.tissue(6).tpm = {'C:\Users\Anton Fomenko\Documents\MATLAB\spm12\spm12\tpm\TPM.nii,6'};
+matlabbatch{2}.spm.spatial.preproc.tissue(6).tpm = {'TPM.nii,6'};
 matlabbatch{2}.spm.spatial.preproc.tissue(6).ngaus = 2;
 matlabbatch{2}.spm.spatial.preproc.tissue(6).native = [0 0];
 matlabbatch{2}.spm.spatial.preproc.tissue(6).warped = [0 0];
@@ -87,12 +96,20 @@ matlabbatch{2}.spm.spatial.preproc.warp.write = [0 0];
 matlabbatch{2}.spm.spatial.preproc.warp.vox = NaN;
 matlabbatch{2}.spm.spatial.preproc.warp.bb = [NaN NaN NaN
                                               NaN NaN NaN];
+                                          
+                                          
+                         
+                                          
+disp('Finished creating Gray/White matter maps of flipped images. Now proceeding with template creation......');
+
+                                         
+pause(1)                                
 matlabbatch{3}.spm.tools.dartel.warp.images = {
                                                {
-                                               'C:\Users\Anton Fomenko\Desktop\TESTBATCHPET\DICOM\rc1T1.nii,1'
-                                               'C:\Users\Anton Fomenko\Desktop\TESTBATCHPET\DICOM\rc1flipT1.nii,1'
-                                               'C:\Users\Anton Fomenko\Desktop\TESTBATCHPET\DICOM\rc2T1.nii,1'
-                                               'C:\Users\Anton Fomenko\Desktop\TESTBATCHPET\DICOM\rc2flipT1.nii,1'
+                                               'rc1T1.nii,1'
+                                               'rc1flipT1.nii,1'
+                                               'rc2T1.nii,1'
+                                               'rc2flipT1.nii,1'
                                                }
                                                }';
 matlabbatch{3}.spm.tools.dartel.warp.settings.template = 'Template';
@@ -124,3 +141,6 @@ matlabbatch{3}.spm.tools.dartel.warp.settings.param(6).slam = 0.5;
 matlabbatch{3}.spm.tools.dartel.warp.settings.optim.lmreg = 0.01;
 matlabbatch{3}.spm.tools.dartel.warp.settings.optim.cyc = 3;
 matlabbatch{3}.spm.tools.dartel.warp.settings.optim.its = 3;
+
+disp('Finished Warping images using Templates. Please proceed with Step 5');
+

@@ -205,7 +205,3 @@ spm_check_registration(file1, file2);
 disp('Check Reg complete. Please inspect the images in SPM12.');
 
 
-
-
-
-

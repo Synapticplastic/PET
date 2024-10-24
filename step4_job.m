@@ -16,6 +16,8 @@ matlabbatch{1}.spm.spatial.preproc.channel.biasreg = 0.001;
 matlabbatch{1}.spm.spatial.preproc.channel.biasfwhm = 60;
 matlabbatch{1}.spm.spatial.preproc.channel.write = [0 0];
 matlabbatch{1}.spm.spatial.preproc.tissue(1).tpm = {'TPM.nii,1'};
+%copy the TPM.nii file from SPM12 to this directory. You can also reference it
+%explicity at its source ie: Documents\MATLAB\spm12\spm12\tpm\TPM.nii
 matlabbatch{1}.spm.spatial.preproc.tissue(1).ngaus = 1;
 matlabbatch{1}.spm.spatial.preproc.tissue(1).native = [1 1];
 matlabbatch{1}.spm.spatial.preproc.tissue(1).warped = [0 0];

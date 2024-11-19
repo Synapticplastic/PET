@@ -48,16 +48,6 @@ function inputs = Step2(inputs)
         matlabbatch{i}.spm.spatial.coreg.estwrite.roptions.prefix = 'c';  % Prefix 'c' for coregistered images
     end    
     spm_jobman('run', matlabbatch);
-    
-    %% Check Registration for T1, cPET, and cFLAIR
-    % Use SPM's Check Registration function to compare images
-    if nargin && inputs.viz
-        disp('Opening Check Reg for T1.nii, cPET.nii, and cFLAIR.nii...');
-        spm_check_registration('T1.nii', 'cPET.nii', 'cFLAIR.nii');
-        disp('Coregistration and visual check completed successfully.');
-    else
-        disp('Coregistration completed successfully.');
-    end
 
     fn = {'T1', 'PET', 'FLAIR', 'cPET', 'cFLAIR'};
     [ff, nn, ee] = fileparts(pet_image); cPET = fullfile(ff, ['c' nn ee]);
@@ -65,6 +55,16 @@ function inputs = Step2(inputs)
     vl = {ref_image, pet_image, flair_image, cPET, cFLAIR};
     for i = 1:5
         inputs.(fn{i}) = vl{i};
+    end
+
+    %% Check Registration for T1, cPET, and cFLAIR
+    % Use SPM's Check Registration function to compare images
+    if nargin && inputs.viz
+        disp('Opening Check Reg for T1.nii, cPET.nii, and cFLAIR.nii...');
+        spm_check_registration(inputs.T1, inputs.cPET, inputs.cFLAIR);
+        disp('Coregistration and visual check completed successfully.');
+    else
+        disp('Coregistration completed successfully.');
     end
 
 end

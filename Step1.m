@@ -69,7 +69,11 @@ function inputs = Step1(inputs)
         new_nifti = dir(fullfile(out, '*.nii'));
         new_nifti = new_nifti(cell2mat({new_nifti.datenum}) >= timestamp);
         new_nifti = sortrows(struct2table(new_nifti), 'datenum');
-        new_nifti = fullfile(out, new_nifti.name);
+        if size(new_nifti, 1) == 1
+            new_nifti = {fullfile(out, new_nifti.name)};
+        else
+            new_nifti = fullfile(out, new_nifti.name);
+        end        
         if sum(~nii_ext) ~= length(new_nifti)
             error('Number of provided and number of converted NIfTI files do not add up to 3');
         end
@@ -80,6 +84,7 @@ function inputs = Step1(inputs)
     
         % Rename the files in the same order as they appear
         for i = 1:length(nifti_files)
+            if nii_ext(i); continue; end % do not touch NIfTIs explicitly provided
             old_name = nifti_files{i};
             new_name = fullfile(out, desired_names{i});
             movefile(old_name, new_name);

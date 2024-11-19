@@ -1,0 +1,7 @@
+{
+  "PET": "path\to\PET\nifti\or\DCM_dir",
+  "T1": "path\to\T1\nifti\or\DCM_dir",
+  "FLAIR": "path\to\FLAIR\nifti\or\DCM_dir",
+  "output_dir": "path\to\output\dir",
+  "viz": 1
+}

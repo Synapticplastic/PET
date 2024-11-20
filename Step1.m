@@ -24,14 +24,17 @@ function inputs = Step1(inputs)
         % Prepare niftis
         nifti_files(nii_ext) = paths(nii_ext);
 
-        % Prepare output folder
-        out = inputs.output_dir;
-
     % Default behavior - all dicoms in script folder
     else
-        dirs = {fileparts(mfilename('fullpath'))};
-        out = fileparts(mfilename('fullpath'));
+        dirs = {fileparts(mfilename('fullpath'))};        
         nii_ext = [0 0 0];
+        inputs.output_dir = fileparts(mfilename('fullpath'));
+    end
+
+    % remove any unexpected trailing symbols from output directory
+    inputs.output_dir = strtrim(inputs.output_dir);
+    if strcmp(inputs.output_dir(end), filesep)
+        inputs.output_dir(end) = [];
     end
     
     % Get current time
@@ -60,19 +63,19 @@ function inputs = Step1(inputs)
 
         % Import DICOM files to NIfTI format
         disp('Converting DICOM files to NIfTI format...');
-        spm_dicom_convert(hdr, 'all', 'flat', 'nii', out);  % 'all' = convert all, 'flat' = single directory, 'nii' = save as NIfTI
+        spm_dicom_convert(hdr, 'all', 'flat', 'nii', inputs.output_dir);  % 'all' = convert all, 'flat' = single directory, 'nii' = save as NIfTI
         disp('DICOM to NIfTI conversion completed successfully.');        
     end    
     
     % Check and sort the NIfTI files created
     if ~all(nii_ext)
-        new_nifti = dir(fullfile(out, '*.nii'));
+        new_nifti = dir(fullfile(inputs.output_dir, '*.nii'));
         new_nifti = new_nifti(cell2mat({new_nifti.datenum}) >= timestamp);
         new_nifti = sortrows(struct2table(new_nifti), 'datenum');
         if size(new_nifti, 1) == 1
-            new_nifti = {fullfile(out, new_nifti.name)};
+            new_nifti = {fullfile(inputs.output_dir, new_nifti.name)};
         else
-            new_nifti = fullfile(out, new_nifti.name);
+            new_nifti = fullfile(inputs.output_dir, new_nifti.name);
         end        
         if sum(~nii_ext) ~= length(new_nifti)
             error('Number of provided and number of converted NIfTI files do not add up to 3');
@@ -86,13 +89,21 @@ function inputs = Step1(inputs)
         for i = 1:length(nifti_files)
             if nii_ext(i); continue; end % do not touch NIfTIs explicitly provided
             old_name = nifti_files{i};
-            new_name = fullfile(out, desired_names{i});
+            new_name = fullfile(inputs.output_dir, desired_names{i});
             movefile(old_name, new_name);
             disp(['Renamed ', old_name, ' to ', new_name]);
             inputs.(fn{i}) = new_name;
         end
 
         disp('All files renamed successfully as PET.nii, T1.nii, and FLAIR.nii.');
+    end
+
+    for i = 1:length(fn)
+        if ~strcmp(fileparts(inputs.(fn{i})), inputs.output_dir)
+            new_name = fullfile(inputs.output_dir, [fn{i} '.nii']);
+            copyfile(inputs.(fn{i}), new_name);
+            inputs.(fn{i}) = new_name;
+        end
     end
 
 end

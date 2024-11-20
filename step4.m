@@ -56,7 +56,9 @@ function inputs = Step4(inputs)
     disp('Finished creating Gray/White matter maps. Now proceeding with template creation......');
 
     pause(1)
-    imgs = {'rc1T1', 'rc1flipT1', 'rc2T1', 'rc2flipT1'}';
+    [~, nnT1, ~] = fileparts(inputs.T1);
+    [~, nnflipT1, ~] = fileparts(inputs.T1);
+    imgs = {['rc1' nnT1], ['rc1' nnflipT1], ['rc2' nnT1], ['rc2' nnflipT1]}';
     imgs = cellfun(@(x) [fullfile(inputs.output_dir, x) '.nii,1'], imgs, 'un', 0);
     matlabbatch = {};
     matlabbatch{1}.spm.tools.dartel.warp.images = {imgs};
@@ -92,8 +94,8 @@ function inputs = Step4(inputs)
     spm_jobman('run', matlabbatch);
 
     disp('Finished Warping images using Templates.');    
-    inputs.flowfields.original = fullfile(inputs.output_dir, 'u_rc1T1_Template.nii'); % flowfield for original T1
-    inputs.flowfields.flipped = fullfile(inputs.output_dir, 'u_rc1flipT1_Template.nii'); % flowfield for flipped T1
-    inputs.c1T1 = fullfile(inputs.output_dir, 'c1T1.nii');
+    inputs.flowfields.original = fullfile(inputs.output_dir, ['u_rc1' nnT1 '_Template.nii']); % flowfield for original T1
+    inputs.flowfields.flipped = fullfile(inputs.output_dir, ['u_rc1' nnflipT1 '_Template.nii']); % flowfield for flipped T1
+    inputs.c1T1 = fullfile(inputs.output_dir, ['c1' nnT1 '.nii']);
 
 end

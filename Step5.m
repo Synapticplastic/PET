@@ -30,30 +30,37 @@ function inputs = Step5(inputs)
         matlabbatch{i}.spm.tools.dartel.crt_warped.images = {{inputs.(images{i})}};
         matlabbatch{i}.spm.tools.dartel.crt_warped.jactransf = 0;
         matlabbatch{i}.spm.tools.dartel.crt_warped.K = 6;
-        matlabbatch{i}.spm.tools.dartel.crt_warped.interp = 1;        
+        matlabbatch{i}.spm.tools.dartel.crt_warped.interp = 1;
     end
     spm_jobman('run', matlabbatch);
     
     %%INVERTED DEFORMATION
-    images = cellfun(@(x) fullfile(inputs.output_dir, ['w' x '.nii']), images, 'un', 0);
+    [~, nn, ee] = cellfun(@(x) fileparts(inputs.(x)), images, 'un', 0);
+    images = cellfun(@(n, e) fullfile(inputs.output_dir, ['w' n e]), nn, ee, 'un', 0);
     flowfields{2} = ffo;
     matlabbatch = cell(3, 1);
     for i = 1:3
         matlabbatch{i}.spm.tools.dartel.crt_iwarped.flowfields = {flowfields{i}};
         matlabbatch{i}.spm.tools.dartel.crt_iwarped.images = {images{i}};
         matlabbatch{i}.spm.tools.dartel.crt_iwarped.K = 6;
-        matlabbatch{i}.spm.tools.dartel.crt_iwarped.interp = 1;        
+        matlabbatch{i}.spm.tools.dartel.crt_iwarped.interp = 1;
     end
     spm_jobman('run', matlabbatch);
 
-    o = {'swwflipcPET', 'swwPET', 'AIraw', 'product', 'sAI', 'Z_AI_image'};
+    [~, nnT1, ~] = fileparts(inputs.T1);
+    [~, nnflipcPET, ~] = fileparts(inputs.flipcPET);
+    [~, nnPET, ~] = fileparts(inputs.PET);
+    o = {['sww' nnflipcPET], ['sww' nnPET], 'AIraw', 'product', 'sAI', 'Z_AI_image'};
     outputs = struct;
     for i = 1:length(o)
         outputs.(o{i}) = fullfile(inputs.output_dir, [o{i} '.nii']);
     end
+    outputs = renamefields(outputs, {['sww' nnflipcPET], ['sww' nnPET]}, {'swwflipcPET', 'swwPET'});
     
     %%SMOOTH
-    sm_inputs = fullfile(inputs.output_dir, {'wwflipcPET_u_rc1T1_Template.nii', 'wwPET_u_rc1T1_Template.nii'});
+    sm_inputs{1} = ['ww' nnflipcPET '_u_rc1' nnT1 '_Template.nii'];
+    sm_inputs{2} = ['ww' nnPET '_u_rc1' nnT1 '_Template.nii'];
+    sm_inputs = fullfile(inputs.output_dir, sm_inputs);
     spm_smooth(sm_inputs{1}, outputs.swwflipcPET, [8 8 8]);
     spm_smooth(sm_inputs{2}, outputs.swwPET, [8 8 8]);
     
@@ -190,7 +197,7 @@ function inputs = Step5(inputs)
         
         % Define full paths to images
         imgs = struct;
-        imgs.base_image = 'wwT1_u_rc1T1_Template.nii';
+        imgs.base_image = ['ww' nnT1 '_u_rc1' nnT1 '_Template.nii'];
         imgs.overlay1 = 'Z3.nii';
         imgs.overlay2 = 'Z4.nii';
         imgs.overlay3 = 'Z5.nii';

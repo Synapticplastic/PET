@@ -11,6 +11,7 @@ function inputs = Step3(inputs)
     % Specify the input file path
     if ~nargin
         input_files = {'cPET.nii', 'T1.nii', 'cFLAIR.nii'}; 
+        inputs.output_dir = fileparts(mfilename('fullpath'));
     else
         input_files = {inputs.cPET, inputs.T1, inputs.cFLAIR};
     end
@@ -21,8 +22,8 @@ function inputs = Step3(inputs)
     
         % Generate output file names dynamically
         [filepath, name, ext] = fileparts(input_files{i});
-        resliced_file = fullfile(filepath, ['resliced_' name ext]);  % Temporary resliced file
-        output_files{i} = fullfile(filepath, ['flip' name ext]);  % Final output file name: 'flipX.nii'
+        resliced_file = fullfile(inputs.output_dir, ['resliced_' name ext]);  % Temporary resliced file
+        output_files{i} = fullfile(inputs.output_dir, ['flip' name ext]);  % Final output file name: 'flipX.nii'
 
         % Step 1: Reslice the NIfTI image to standard orientation
         disp('Reslicing the image...');

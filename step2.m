@@ -12,30 +12,27 @@ function inputs = Step2(inputs)
     
     % Define file names
     if ~nargin
-        ref_image = fullfile(pwd, 'T1.nii');  % Reference image
-        pet_image = fullfile(pwd, 'PET.nii');  % Source PET image
-        flair_image = fullfile(pwd, 'FLAIR.nii');  % Source FLAIR image
-    else
-        ref_image = inputs.T1;
-        pet_image = inputs.PET;
-        flair_image = inputs.FLAIR;
+        inputs.T1 = fullfile(pwd, 'T1.nii');  % Reference image
+        inputs.PET = fullfile(pwd, 'PET.nii');  % Source PET image
+        inputs.FLAIR = fullfile(pwd, 'FLAIR.nii');  % Source FLAIR image
+        inputs.output_dir = fileparts(mfilename('fullpath'));
     end
     
     % Check that the files exist in the current directory
-    if ~exist(ref_image, 'file')
-        error(['Reference image not found: ', ref_image]);
+    if ~exist(inputs.T1, 'file')
+        error(['Reference image not found: ', inputs.T1]);
     end
-    if ~exist(pet_image, 'file')
-        error(['Source PET image not found: ', pet_image]);
+    if ~exist(inputs.PET, 'file')
+        error(['Source PET image not found: ', inputs.PET]);
     end
-    if ~exist(flair_image, 'file')
-        error(['Source FLAIR image not found: ', flair_image]);
+    if ~exist(inputs.FLAIR, 'file')
+        error(['Source FLAIR image not found: ', inputs.FLAIR]);
     end
     
     %% Coregister (Estimate & Reslice) PET to T1 then FLAIR to T1
-    sources = {pet_image, flair_image};
+    sources = {inputs.PET, inputs.FLAIR};
     for i = 1:2
-        matlabbatch{i}.spm.spatial.coreg.estwrite.ref = {ref_image};
+        matlabbatch{i}.spm.spatial.coreg.estwrite.ref = {inputs.T1};
         matlabbatch{i}.spm.spatial.coreg.estwrite.source = {sources{i}};
         matlabbatch{i}.spm.spatial.coreg.estwrite.other = {''};  % No other images
         matlabbatch{i}.spm.spatial.coreg.estwrite.eoptions.cost_fun = 'nmi';
@@ -49,13 +46,10 @@ function inputs = Step2(inputs)
     end    
     spm_jobman('run', matlabbatch);
 
-    fn = {'T1', 'PET', 'FLAIR', 'cPET', 'cFLAIR'};
-    [ff, nn, ee] = fileparts(pet_image); cPET = fullfile(ff, ['c' nn ee]);
-    [ff, nn, ee] = fileparts(flair_image); cFLAIR = fullfile(ff, ['c' nn ee]);
-    vl = {ref_image, pet_image, flair_image, cPET, cFLAIR};
-    for i = 1:5
-        inputs.(fn{i}) = vl{i};
-    end
+    [~, nn, ee] = fileparts(inputs.PET);
+    inputs.cPET = fullfile(inputs.output_dir, ['c' nn ee]);
+    [~, nn, ee] = fileparts(inputs.FLAIR);
+    inputs.cFLAIR = fullfile(inputs.output_dir, ['c' nn ee]);
 
     %% Check Registration for T1, cPET, and cFLAIR
     % Use SPM's Check Registration function to compare images

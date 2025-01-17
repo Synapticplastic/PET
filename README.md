@@ -40,6 +40,16 @@ VIEWING RESULTS:
 2. The Z3, Z4, and Z5.nii overlays are simultaneously superimposed to see the asymmetrical regions in order of strength of asymmetry. 
 3. Z3,4,5 with "clustered" suffix can be used instead if only want to see big clusters of asymmetry
 
+EXPORTING RESULTS TO DICOM:
+
+1. In MRIcron, File> Save as NIFTI for each of: the background (T1) and each hotspot overlay, one by one. Ensure overlays are grayscale.
+2. Use SPM12 imgcalc function to fuse all three into one nifti file. Expression (i1=MRI, i2, i3, etc = overlays)
+(i1 .* ((i2<0.5) & (i3<0.5))) + (1 .* ((i2>0.5) | (i3>0.5)))
+3. Open output in MRIcron to ensure Burned in hotspots are adequate
+4. To use in BrainLab/NeuroMate planning station must EXPORT AS DICOM 
+5. Use 3Dslicer --> Module> DICOM  --> EXPORT as DICOM series --> Populate tag fields.
+6. You should now have a folder of DICOMs ready for use
+
 
 
 Reference: Aslam S, Damodaran N, Rajeshkannan R, Sarma M, Gopinath S, Pillai A. Asymmetry index in anatomically symmetrized FDG-PET for improved epileptogenic focus detection in pharmacoresistant epilepsy. J Neurosurg. 2022 Aug 5;138(3):828-836. doi: 10.3171/2022.6.JNS22717. PMID: 35932262

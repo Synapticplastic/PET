@@ -34,7 +34,9 @@ GUIDELINE FOR USE:
 9. Run Step 4.m  This will automatically call step4_job.m (which should be sitting in your directory for a complex set of gray/white matter mapping and DARTEL template creation.  THIS STEP TAKES ABOUT 20-30 MINUTES OR SO on a laptop and will create many .nii files
 10. Run Step 5.m   This will warp and process the results further to create a set of NIFTI overlays which can be manually mapped over your original T1 scan. This will also overlay the results onto the T1 using a viewer
 
-VIEWING RESULTS:
+![image](https://github.com/user-attachments/assets/987a5f85-21a7-4577-90c3-9b2f703ef9be)
+
+VIEWING RESULTS (results are automatically shown in Step 5.m above, but if you just want to view existing results separately do this step):
 
 1. The viewer.m script will set the anatomical unflipped T1 wwT1_u_rc1T1_Template.nii as background..
 2. The Z3, Z4, and Z5.nii overlays are simultaneously superimposed to see the asymmetrical regions in order of strength of asymmetry. 

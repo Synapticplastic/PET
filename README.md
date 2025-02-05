@@ -44,13 +44,19 @@ VIEWING RESULTS (results are automatically shown in Step 5.m above, but if you j
 
 EXPORTING RESULTS TO DICOM:
 
-1. In MRIcron, File> Save as NIFTI for each of: the background (T1) and each hotspot overlay, one by one. Ensure overlays are grayscale.
-2. Use SPM12 imgcalc function to fuse all three into one nifti file. Expression (i1=MRI, i2, i3, etc = overlays)
-(i1 .* ((i2<0.5) & (i3<0.5))) + (1 .* ((i2>0.5) | (i3>0.5)))
-3. Open output in MRIcron to ensure Burned in hotspots are adequate
-4. To use in BrainLab/NeuroMate planning station must EXPORT AS DICOM 
+On MRICron: File> Save as NIFTI for both the background (T1.nii) and each overlay, one by one. Ensure overlays are grayscale.
+
+Use SPM12 imgcalc function to fuse all three into one nifti file. Expression (i1=base MRI .nii, i2, i3, etc = are overlay .nii files)
+Can choose black or white for your burn-in color:
+
+(i1 .* ((i2<0.5) & (i3<0.5))) + (1 .* ((i2>0.5) | (i3>0.5)))                                         BLACK burnin
+(i1 .* ((i2 < 0.5) & (i3 < 0.5))) + (131 .* ((i2 > 0.5) | (i3 > 0.5)))                               WHITE burnin
+
+Open output in MRIcron to ensure Burned in is adequate of new nifti. 
+
+4. To use in BrainLab/NeuroMate planning station must EXPORT burned-in .nii AS DICOM 
 5. Use 3Dslicer --> Module> DICOM  --> EXPORT as DICOM series --> Populate tag fields.
-6. You should now have a folder of DICOMs ready for use
+6. You should now have a folder of DICOMs ready for use. Can put this on USB stick and use on planning software (Brainlab, Stealth, Neuromate)
 
 
 

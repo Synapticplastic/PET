@@ -1,6 +1,6 @@
 # PET
 Asymmetry Index pipeline for evaluation of epilepsy
-v1.0.1 (October 24, 2024)
+v2.0 (Feb 2025)
 
 Custom scripts by Anton Fomenko MD FRCSC
 Epilepsy Neurosurgery Fellow, University of Toronto

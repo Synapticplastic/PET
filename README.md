@@ -22,10 +22,10 @@ REQUIREMENTS:
 
 GUIDELINE FOR USE:
 
-1. Download all scripts (Steps 1-5), and the TPM.nii file. The step4_job.m file needs to also be downloaded but not explicity run. Ensure MATLAB and SPM12 is installed
+1. Download all scripts (Steps 1-5). The step4_job.m file needs to also be downloaded but not explicity run. Ensure MATLAB and SPM12 is installed
 2. Export PET, T1 MRI, FLAIR MRI scans of patients. Ideally the scans are done within the same year, and are thinly sliced
 3. PET images will come as "PET" or "NACPET". Choose the "PET" one, as this is attenuation corrected.
-4. Make sure all scripts and .nii files are in the same folder.
+4. Make sure all scripts and .nii files are in the same folder. Find the TPM.nii file in your SPM folder (spm12\tpm\tpm.nii), and make a copy into this folder.
 5. Run Step 1.m   This will convert all the DICOM images to three key NIFTI files (.nii) and rename them.
 6. View the files (PET.nii, FLAIR.nii, T1.nii) to ensure the names correspond to the images. Depending on the order of the Dicoms, they may need to be manually renamed
 7. Run Step 2.m    This will rigidly coregister the PET and FLAIR images to the T1 image.  The checkreg tool will pop up at the end. Verify the images all align

@@ -49,8 +49,11 @@ On MRICron: File> Save as NIFTI for both the background (T1.nii) and each overla
 Use SPM12 imgcalc function to fuse all three into one nifti file. Expression (i1=base MRI .nii, i2, i3, etc = are overlay .nii files)
 Can choose black or white for your burn-in color:
 
-(i1 .* ((i2<0.5) & (i3<0.5))) + (1 .* ((i2>0.5) | (i3>0.5)))                                         BLACK burnin
-(i1 .* ((i2 < 0.5) & (i3 < 0.5))) + (131 .* ((i2 > 0.5) | (i3 > 0.5)))                               WHITE burnin
+(i1 .* ((i2<0.5) & (i3<0.5))) + (1 .* ((i2>0.5) | (i3>0.5)))                                         
+BLACK burnin
+
+(i1 .* ((i2 < 0.5) & (i3 < 0.5))) + (131 .* ((i2 > 0.5) | (i3 > 0.5)))                          
+WHITE burnin
 
 Open output in MRIcron to ensure Burned in is adequate of new nifti. 
 

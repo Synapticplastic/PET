@@ -2,7 +2,7 @@
 function inputs = Step2(inputs)
     
     % Rewrite header affines using image centre-of-mass
-    if inputs.centre_of_mass
+    if ~isfield(inputs, 'centre_of_mass') || inputs.centre_of_mass
         cellfun(@centre_of_mass, {inputs.T1, inputs.PET, inputs.FLAIR});
     end
 
@@ -44,7 +44,7 @@ function inputs = Step2(inputs)
     end
 
     % Use SPM's Check Registration function to compare images
-    if inputs.viz
+    if ~isfield(inputs, 'viz') || inputs.viz
         disp('Opening Check Reg for T1, PET, and FLAIR...');
         spm_check_registration(inputs.T1, inputs.coregistered_PET, inputs.coregistered_FLAIR);
         disp('Viewer is open. Press any key in the command window to continue.');

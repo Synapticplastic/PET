@@ -40,7 +40,7 @@ function inputs = Step3(inputs)
             error(['File not found: ', output_files{2}]);
         end
     
-        if inputs.viz
+        if ~isfield(inputs, 'viz') || inputs.viz
     
             % Run SPM12 Check Reg with the specified files
             disp('Loading SPM Check Reg for comparison...');

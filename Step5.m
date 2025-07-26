@@ -91,19 +91,34 @@ function inputs = Step5(inputs)
     % Settings for thresholding
     thresholds = [3, 4, 5];
     conn = 26; % use 26-connectivity for clustering
-    min_cluster_size = 100; % minimum cluster size in mm³
-    
+    if ~isfield(inputs, 'cluster_size') % minimum cluster size in mm³
+        min_cluster_size = 100; 
+    else
+        min_cluster_size = inputs.cluster_size;
+    end
+
     % work out min_cluster_size in voxels
     voxel_size = sqrt(sum(V_AI.mat(1:3,1:3).^2));  % Size along each axis (X, Y, Z)
     voxel_volume = prod(voxel_size);    % Voxel volume in mm³
     voxel_cluster_size = ceil(min_cluster_size / voxel_volume);
+
+    % prepare burn-in image
+    if isfield(inputs, 'burnin') && inputs.burnin
+        burnin_hdr = spm_vol(inputs.T1);
+        burnin_vol = spm_read_vols(burnin_hdr);
+        t1_vol = burnin_vol;
+        if length(thresholds) > 3
+            warning('Only the last three thresholds will be burned in')
+        end
+        burnin_hdr.fname = [inputs.output_dir filesep 'burnin.nii'];
+    end
     
     % Loop over thresholds
-    for idx = 1:length(thresholds)
+    for t_idx = 1:length(thresholds)
 
         %% create thresholded image
 
-        Z_threshold = thresholds(idx);
+        Z_threshold = thresholds(t_idx);
         
         % Create a copy of the Z-score data
         Z_thresh_data = Z_data;
@@ -146,8 +161,8 @@ function inputs = Step5(inputs)
         
         % Include clusters larger than the threshold
         for i = 1:length(large_clusters_idx)
-            idx = CC.PixelIdxList{large_clusters_idx(i)};
-            clustered_Z_data(idx) = Z_thresh_data(idx);
+            z_idx = CC.PixelIdxList{large_clusters_idx(i)};
+            clustered_Z_data(z_idx) = Z_thresh_data(z_idx);
         end
         
         % Find the peak AI value in the Z-score image
@@ -161,19 +176,43 @@ function inputs = Step5(inputs)
             peak_cluster_idx = find(cellfun(@(c) ismember(peak_index, c), CC.PixelIdxList));
             
             % Include this cluster even if it's smaller than the threshold
-            idx = CC.PixelIdxList{peak_cluster_idx};
-            clustered_Z_data(idx) = Z_thresh_data(idx);
+            z_idx = CC.PixelIdxList{peak_cluster_idx};
+            clustered_Z_data(z_idx) = Z_thresh_data(z_idx);
         end
         
         % Save the clustered image
         V_clustered = V_AI;
         V_clustered.fname = fullfile(inputs.output_dir, sprintf('Z%d_clustered.nii', Z_threshold)); % Output filename
         spm_write_vol(V_clustered, clustered_Z_data);
+
+        % Add to the burn-in image
+        if isfield(inputs, 'burnin') && inputs.burnin
+            switch t_idx - (length(thresholds) - 3)
+                case 1
+                    burnin_vol(clustered_Z_data > 0) = max(burnin_vol(:)); % white burn-in
+                case 2
+                    burnin_vol(clustered_Z_data > 0) = min(burnin_vol(:)); % black burn-in
+                case 3
+                    gm_img = inputs.c1T1;
+                    gm_vox = spm_read_vols(spm_vol(gm_img)) > 0;
+                    gm_int = t1_vol(gm_vox);
+                    wm_img = strrep(inputs.c1T1, 'c1original', 'c2original');
+                    wm_vox = spm_read_vols(spm_vol(wm_img)) > 0;
+                    wm_int = t1_vol(wm_vox);
+                    grey_intensity = (median(gm_int(:)) + median(wm_int(:))) / 2;
+                    burnin_vol(clustered_Z_data > 0) = grey_intensity; % grey burn-in
+            end
+        end
+
     end
+
+    if isfield(inputs, 'burnin') && inputs.burnin
+        spm_write_vol(burnin_hdr, burnin_vol);
+    end    
 
     disp('Overlays finished')
 
-    if inputs.viz
+    if ~isfield(inputs, 'viz') || inputs.viz
     
         disp('Now proceeding to open viewer...');
         
@@ -208,4 +247,5 @@ function inputs = Step5(inputs)
         spm_orthviews('Redraw');
 
     end    
+
 end

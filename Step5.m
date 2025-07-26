@@ -1,31 +1,16 @@
 function inputs = Step5(inputs)
     
     % Prepare inputs
-    images = {'PET', 'flipcPET', 'T1'};
-    if ~nargin
-        current_dir = fileparts(mfilename('fullpath'));
-        inputs.output_dir = current_dir;
-        for i = 1:2
-            if i == 2; prefix = 'w'; else; prefix = ''; end
-            for j = 1:3
-                inputs.(images{j}) = fullfile(current_dir, [prefix images{j} '.nii']);
-            end
-        end
-        inputs.flowfields.original = fullfile(current_dir, 'u_rc1T1_Template.nii');
-        inputs.flowfields.flipped = fullfile(current_dir, 'u_rc1flipT1_Template.nii');
-    end
-
+    images = {'coregistered_PET', 'flipped_coregistered_PET'};
+    
     % Initialize SPM
     spm('defaults', 'PET');
     spm_jobman('initcfg');
 
-    ffo = inputs.flowfields.original;
-    fff = inputs.flowfields.flipped; 
-    flowfields = {ffo, fff, ffo};
-
     %%FORWARD DEFORMATION
-    matlabbatch = cell(3, 1);
-    for i = 1:3    
+    flowfields = {inputs.flowfields.original, inputs.flowfields.flipped};
+    matlabbatch = cell(2, 1);
+    for i = 1:2
         matlabbatch{i}.spm.tools.dartel.crt_warped.flowfields = {flowfields{i}};
         matlabbatch{i}.spm.tools.dartel.crt_warped.images = {{inputs.(images{i})}};
         matlabbatch{i}.spm.tools.dartel.crt_warped.jactransf = 0;
@@ -37,9 +22,9 @@ function inputs = Step5(inputs)
     %%INVERTED DEFORMATION
     [~, nn, ee] = cellfun(@(x) fileparts(inputs.(x)), images, 'un', 0);
     images = cellfun(@(n, e) fullfile(inputs.output_dir, ['w' n e]), nn, ee, 'un', 0);
-    flowfields{2} = ffo;
-    matlabbatch = cell(3, 1);
-    for i = 1:3
+    flowfields = {inputs.flowfields.original, inputs.flowfields.original};
+    matlabbatch = cell(2, 1);
+    for i = 1:2
         matlabbatch{i}.spm.tools.dartel.crt_iwarped.flowfields = {flowfields{i}};
         matlabbatch{i}.spm.tools.dartel.crt_iwarped.images = {images{i}};
         matlabbatch{i}.spm.tools.dartel.crt_iwarped.K = 6;
@@ -48,8 +33,8 @@ function inputs = Step5(inputs)
     spm_jobman('run', matlabbatch);
 
     [~, nnT1, ~] = fileparts(inputs.T1);
-    [~, nnflipcPET, ~] = fileparts(inputs.flipcPET);
-    [~, nnPET, ~] = fileparts(inputs.PET);
+    [~, nnflipcPET, ~] = fileparts(inputs.flipped_coregistered_PET);
+    [~, nnPET, ~] = fileparts(inputs.coregistered_PET);
     o = {['sww' nnflipcPET], ['sww' nnPET], 'AIraw', 'product', 'sAI', 'Z_AI_image'};
     outputs = struct;
     for i = 1:length(o)
@@ -68,16 +53,16 @@ function inputs = Step5(inputs)
     
     spm_imcalc({outputs.swwflipcPET, outputs.swwPET}, outputs.AIraw, '(i1 - i2) ./ max(i1, i2)');
     
-    %% REstrict to Gray matter
+    % Restrict to Gray matter
     
-    spm_imcalc({outputs.AIraw, inputs.c1T1}, outputs.product, 'i1 .* i2');
+    spm_imcalc({inputs.c1T1, outputs.AIraw}, outputs.product, 'i1 .* i2');
     
-    %Smooth to 8 FWHM
+    % Smooth to 8 FWHM
     
-    spm_smooth(outputs.product, outputs.sAI, [8 8 8]);
+    spm_smooth(outputs.product, outputs.sAI, [8 8 8]); % in mm
     
     % Specify the filename of your AI image
-    AI_filename = outputs.sAI; % Replace with your actual filename
+    AI_filename = outputs.sAI;
     
     % Load the image header and data
     V_AI = spm_vol(AI_filename);
@@ -103,8 +88,15 @@ function inputs = Step5(inputs)
     % Write the Z-score image to disk
     spm_write_vol(V_Z, Z_data);
     
-    % Thresholds to apply
+    % Settings for thresholding
     thresholds = [3, 4, 5];
+    conn = 26; % use 26-connectivity for clustering
+    min_cluster_size = 100; % minimum cluster size in mm³
+    
+    % work out min_cluster_size in voxels
+    voxel_size = sqrt(sum(V_AI.mat(1:3,1:3).^2));  % Size along each axis (X, Y, Z)
+    voxel_volume = prod(voxel_size);    % Voxel volume in mm³
+    voxel_cluster_size = ceil(min_cluster_size / voxel_volume);
     
     % Loop over thresholds
     for idx = 1:length(thresholds)
@@ -140,21 +132,19 @@ function inputs = Step5(inputs)
         % Create a binary mask of non-NaN and positive voxels
         mask = ~isnan(Z_thresh_data) & Z_thresh_data > 0;
         
-        % Label connected clusters using 26-connectivity
-        conn = 26;
+        % Label connected clusters        
         CC = bwconncomp(mask, conn);
         
         % Get cluster sizes
         cluster_sizes = cellfun(@numel, CC.PixelIdxList);
         
-        % Retain clusters larger than 100 voxels
-        min_cluster_size = 100;
-        large_clusters_idx = find(cluster_sizes >= min_cluster_size);
+        % Retain clusters larger than 100 mm^3
+        large_clusters_idx = find(cluster_sizes >= voxel_cluster_size);
         
         % Initialize an empty image for the clusters
         clustered_Z_data = zeros(size(Z_thresh_data));
         
-        % Include clusters larger than 100 voxels
+        % Include clusters larger than the threshold
         for i = 1:length(large_clusters_idx)
             idx = CC.PixelIdxList{large_clusters_idx(i)};
             clustered_Z_data(idx) = Z_thresh_data(idx);
@@ -170,7 +160,7 @@ function inputs = Step5(inputs)
             % Find which cluster contains the peak
             peak_cluster_idx = find(cellfun(@(c) ismember(peak_index, c), CC.PixelIdxList));
             
-            % Include this cluster even if it's smaller than 100 voxels
+            % Include this cluster even if it's smaller than the threshold
             idx = CC.PixelIdxList{peak_cluster_idx};
             clustered_Z_data(idx) = Z_thresh_data(idx);
         end
@@ -183,7 +173,6 @@ function inputs = Step5(inputs)
 
     disp('Overlays finished')
 
-    % inputs.viz = 1;
     if inputs.viz
     
         disp('Now proceeding to open viewer...');
@@ -196,12 +185,12 @@ function inputs = Step5(inputs)
         spm_orthviews('Reset');
         
         % Define full paths to images
-        imgs = struct;
-        imgs.base_image = ['ww' nnT1 '_u_rc1' nnT1 '_Template.nii'];
+        imgs = struct;        
         imgs.overlay1 = 'Z3.nii';
         imgs.overlay2 = 'Z4.nii';
         imgs.overlay3 = 'Z5.nii';
         imgs = structfun(@(x) fullfile(inputs.output_dir, x), imgs, 'un', 0);
+        imgs.base_image = inputs.T1;
         
         % Display the base image using spm_check_registration
         spm_check_registration(imgs.base_image);

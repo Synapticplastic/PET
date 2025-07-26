@@ -2,36 +2,21 @@
 
 function inputs = Step1(inputs)
 
-    % Ensure SPM12 is in your MATLAB path
-    if isempty(which('spm'))
-        error('SPM12 not found! Please add SPM12 to your MATLAB path.');
-    end
-
     fn = {'PET', 'T1', 'FLAIR'};
     nifti_files = {''; ''; ''};
 
-    % Get unique folders for imaging data    
-    if nargin
+    % Check for niftis
+    nii_ext = cellfun(@(x) strsplit(inputs.(x), '.'), fn, 'un', 0);
+    nii_ext = cellfun(@(x) any(strcmp(x(end - min(1, length(x) - 1): end), 'nii')), nii_ext);
 
-        % Check for niftis
-        nii_ext = cellfun(@(x) strsplit(inputs.(x), '.'), fn, 'un', 0);
-        nii_ext = cellfun(@(x) strcmp(x{min(length(x), 2)}, 'nii'), nii_ext);
+    % Get input and their types
+    paths = cellfun(@(x) inputs.(x), fn, 'un', 0);
+    dirs = unique(paths(cellfun(@ischar, paths) & ~nii_ext), 'stable');        
 
-        % Get inputs
-        paths = cellfun(@(x) inputs.(x), fn, 'un', 0);
-        dirs = unique(paths(cellfun(@ischar, paths) & ~nii_ext), 'stable');        
+    % Prepare niftis
+    nifti_files(nii_ext) = paths(nii_ext);    
 
-        % Prepare niftis
-        nifti_files(nii_ext) = paths(nii_ext);
-
-    % Default behavior - all dicoms in script folder
-    else
-        dirs = {fileparts(mfilename('fullpath'))};        
-        nii_ext = [0 0 0];
-        inputs.output_dir = fileparts(mfilename('fullpath'));
-    end
-
-    % remove any unexpected trailing symbols from output directory
+    % Remove any unexpected trailing symbols from output directory
     inputs.output_dir = strtrim(inputs.output_dir);
     if strcmp(inputs.output_dir(end), filesep)
         inputs.output_dir(end) = [];
@@ -40,7 +25,7 @@ function inputs = Step1(inputs)
     % Get current time
     timestamp = now;
     
-    % Convert to nifti
+    % Convert any directories (presumed to be DICOM) to nifti
     for d = 1:length(dirs)
     
         % Get a list of all DICOM files in the directory
@@ -65,10 +50,12 @@ function inputs = Step1(inputs)
         disp('Converting DICOM files to NIfTI format...');
         spm_dicom_convert(hdr, 'all', 'flat', 'nii', inputs.output_dir);  % 'all' = convert all, 'flat' = single directory, 'nii' = save as NIfTI
         disp('DICOM to NIfTI conversion completed successfully.');        
+
     end    
     
     % Check and sort the NIfTI files created
     if ~all(nii_ext)
+
         new_nifti = dir(fullfile(inputs.output_dir, '*.nii'));
         new_nifti = new_nifti(cell2mat({new_nifti.datenum}) >= timestamp);
         new_nifti = sortrows(struct2table(new_nifti), 'datenum');
@@ -83,7 +70,7 @@ function inputs = Step1(inputs)
         nifti_files(~nii_ext) = new_nifti;
 
         % Define the desired output filenames
-        desired_names = {'PET.nii', 'T1.nii', 'FLAIR.nii'};
+        desired_names = cellfun(@(x) [x '.nii'], fn, 'un', 0);
     
         % Rename the files in the same order as they appear
         for i = 1:length(nifti_files)
@@ -96,38 +83,24 @@ function inputs = Step1(inputs)
         end
 
         disp('All files renamed successfully as PET.nii, T1.nii, and FLAIR.nii.');
+
     end
 
     for i = 1:length(fn)
-        if ~strcmp(fileparts(inputs.(fn{i})), inputs.output_dir)
-            new_name = fullfile(inputs.output_dir, [fn{i} '.nii']);
-            copyfile(inputs.(fn{i}), new_name);
-            inputs.(fn{i}) = new_name;
+        target_path = [inputs.output_dir filesep 'original_' fn{i} '.nii'];
+        if ~strcmp(inputs.(fn{i}), target_path)
+            if endsWith(inputs.(fn{i}), '.nii.gz') % spm dislikes .nii.gz
+                gunzip(inputs.(fn{i}), inputs.output_dir);
+                [~, nn, ~] = fileparts(inputs.(fn{i}));
+                extracted_path = [inputs.output_dir filesep nn];
+                if ~strcmp(extracted_path, target_path)
+                    movefile(extracted_path, target_path)
+                end
+            else
+                copyfile(inputs.(fn{i}), target_path);
+            end
+            inputs.(fn{i}) = target_path;
         end
     end
-
-end
-
-% MATLAB Script to Open PET.nii using SPM12's Viewer before coregistering
-function view_file(file_to_view)
-
-    % Ensure SPM12 is in your MATLAB path
-    if isempty(which('spm'))
-        error('SPM12 not found! Please add SPM12 to your MATLAB path.');
-    end
-
-    % Specify the file name to view
-    if ~nargin; file_to_view = 'PET.nii'; end  % Replace with your file name if needed
-
-    % Check if the file exists
-    if ~exist(file_to_view, 'file')
-        error(['File not found: ', file_to_view]);
-    end
-
-    % Open the SPM12 Image Viewer
-    disp(['Opening ', file_to_view, ' in SPM12 viewer...']);
-    spm_image('Display', file_to_view);
-
-    disp('Set AC and rotate PET image to good position!!.');
 
 end

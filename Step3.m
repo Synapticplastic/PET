@@ -3,31 +3,19 @@
 
 function inputs = Step3(inputs)
 
-    % Ensure SPM12 is in your MATLAB path
-    if isempty(which('spm'))
-        error('SPM12 not found! Please add SPM12 to your MATLAB path.');
-    end
-
-    % Specify the input file path
-    if ~nargin
-        input_files = {'cPET.nii', 'T1.nii', 'cFLAIR.nii'}; 
-        inputs.output_dir = fileparts(mfilename('fullpath'));
-    else
-        input_files = {inputs.cPET, inputs.T1, inputs.cFLAIR};
-    end
-
+    input_files = {'coregistered_PET', 'T1', 'coregistered_FLAIR'};
     output_files = cell(3, 1);
 
     for i = 1:3
     
         % Generate output file names dynamically
-        [filepath, name, ext] = fileparts(input_files{i});
+        [~, name, ext] = fileparts(inputs.(input_files{i}));
         resliced_file = fullfile(inputs.output_dir, ['resliced_' name ext]);  % Temporary resliced file
-        output_files{i} = fullfile(inputs.output_dir, ['flip' name ext]);  % Final output file name: 'flipX.nii'
+        output_files{i} = fullfile(inputs.output_dir, ['flipped_' name ext]);  % Final output file name: 'flipX.nii'
 
         % Step 1: Reslice the NIfTI image to standard orientation
         disp('Reslicing the image...');
-        reslice_nii(input_files{i}, resliced_file);
+        reslice_nii(inputs.(input_files{i}), resliced_file);
         
         % Step 2: Load the resliced image
         disp('Loading the resliced image...');
@@ -56,23 +44,17 @@ function inputs = Step3(inputs)
     
             % Run SPM12 Check Reg with the specified files
             disp('Loading SPM Check Reg for comparison...');
-            spm_check_registration(input_files{i}, output_files{i});
-            disp('Check Reg complete. Please inspect the images in SPM12.');            
-            
-            % Display message to user
+            spm_check_registration(inputs.(input_files{i}), output_files{i});
+            disp('Check Reg complete. Please confirm that the flip was applied along the correct axis.');
             disp('Viewer is open. Press any key in the command window to continue.');
-            
-            % Wait for a key press in the command window
             pause;  % Waits for any key press in the command window
-            
-            % Resume the script after key press
             disp('Key pressed. Script resumed.');
+
         end
     end
     
-    fn = {'flipcPET', 'flipT1', 'flipcFLAIR'};
     for i = 1:3
-        inputs.(fn{i}) = output_files{i};
+        inputs.(['flipped_' input_files{i}]) = output_files{i};
     end
 
 end

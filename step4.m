@@ -1,18 +1,15 @@
-function inputs = Step4(inputs)
-    
-    % Ensure SPM12 is in your MATLAB path
-    if isempty(which('spm'))
-        error('SPM12 not found! Please add SPM12 to your MATLAB path.');
-    end
+function inputs = Step4(inputs)    
 
     % Prepare
     spm('defaults', 'FMRI');
-    volpairs = {{inputs.T1; inputs.cFLAIR}, {inputs.flipT1; inputs.flipcFLAIR}};
-    volpairs = cellfun(@(x) cellfun(@(x) [x ',1'], x, 'un', 0), volpairs, 'un', 0);
+    volpairs = {'T1'; 'coregistered_FLAIR'};
+    volpairs = {volpairs; cellfun(@(vp) ['flipped_' vp], volpairs, 'un', 0)};
+    volpairs = cellfun(@(vp) cellfun(@(x) [inputs.(x) ',1'], vp, 'un', 0), volpairs, 'un', 0);
     TPM = fullfile(fileparts(which('spm')), 'tpm', 'TPM.nii');
 
+    % Generate grey (rc1) and white (rc2) matter maps
     matlabbatch = cell(2, 1);
-    for i = 1:2
+    for i = 1:2 % coregistered, then coregistered flipped
         matlabbatch{i}.spm.spatial.preproc.channel.vols = volpairs{i};
         matlabbatch{i}.spm.spatial.preproc.channel.biasreg = 0.001;
         matlabbatch{i}.spm.spatial.preproc.channel.biasfwhm = 60;
@@ -57,7 +54,7 @@ function inputs = Step4(inputs)
 
     pause(1)
     [~, nnT1, ~] = fileparts(inputs.T1);
-    [~, nnflipT1, ~] = fileparts(inputs.T1);
+    [~, nnflipT1, ~] = fileparts(inputs.flipped_T1);
     imgs = {['rc1' nnT1], ['rc1' nnflipT1], ['rc2' nnT1], ['rc2' nnflipT1]}';
     imgs = cellfun(@(x) [fullfile(inputs.output_dir, x) '.nii,1'], imgs, 'un', 0);
     matlabbatch = {};
@@ -96,6 +93,6 @@ function inputs = Step4(inputs)
     disp('Finished Warping images using Templates.');    
     inputs.flowfields.original = fullfile(inputs.output_dir, ['u_rc1' nnT1 '_Template.nii']); % flowfield for original T1
     inputs.flowfields.flipped = fullfile(inputs.output_dir, ['u_rc1' nnflipT1 '_Template.nii']); % flowfield for flipped T1
-    inputs.c1T1 = fullfile(inputs.output_dir, ['c1' nnT1 '.nii']);
+    inputs.c1T1 = fullfile(inputs.output_dir, ['c1' nnT1 '.nii']); % grey matter map in the original T1 image's space
 
 end

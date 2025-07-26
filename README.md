@@ -37,7 +37,7 @@ Epilepsy Neurosurgery Fellow, University of Toronto
 
 6. Create an inputs JSON as demonstrated below. **This file is mandatory.**
 
-7. Run asymmetry_index_wrapper.m and with string containing the path to your JSON as input.
+7. Run asymmetry_index_wrapper.m and with a string containing the path to your JSON as input.
 
 8. In case any individual step needs to be re-run, the output folder will contain mat-files with inputs into every step which can be re-used.
 
@@ -57,7 +57,7 @@ Create a text file and enter the following (could be later renamed to .json):
 }
 ```
 
-The first four are the full paths to respective files / output folder. The `centre_of_mass` setting lets registration initialise from the centres of mass of both images. This helps when e.g. PET is wildly out of alignment, as so it is strongly recommended by default (unless all images are pre-registered). The `viz` flag provides interactive quality control of the relevant steps - it is recommended to inspect the interim and final outputs to ensure correct results. Disabling the last two flags is possible by changing "1" to "0".
+The first four are full paths to the respective files / output folder. The `centre_of_mass` flag lets registration initialise from the centres of mass of both images. This helps when e.g. PET is wildly out of alignment, and so it is strongly recommended by default (unless all images are pre-registered). The `viz` flag provides interactive quality control of the relevant steps - it is recommended to inspect the interim and final outputs to ensure correct results. Disabling the last two flags is possible by changing "1" to "0".
 
 ![image](https://github.com/user-attachments/assets/987a5f85-21a7-4577-90c3-9b2f703ef9be)
 
@@ -80,7 +80,8 @@ On MRICron: File> Save as NIFTI for both the background (T1.nii) and each overla
 Use SPM12 imgcalc function to fuse all three into one nifti file. Expression (i1=base MRI .nii, i2, i3, etc = are overlay .nii files)
 Can choose black or white for your burn-in color:
 
-BLACK burn-in: `(i1 .* ((i2<0.5) & (i3<0.5))) + (1 .* ((i2>0.5) | (i3>0.5)))`
+BLACK burn-in: `(i1 .* ((i2<0.5) & (i3<0.5))) + (1 .* ((i2>0.5) | (i3>0.5)))` 
+
 WHITE burn-in: `(i1 .* ((i2 < 0.5) & (i3 < 0.5))) + (131 .* ((i2 > 0.5) | (i3 > 0.5)))`
 
 Open output in MRIcron to ensure Burned in is adequate of new nifti. 

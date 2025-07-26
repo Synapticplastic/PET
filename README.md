@@ -66,15 +66,14 @@ These are the required inputs that should always be present. In addition, the fo
 
 - `centre_of_mass` lets registration initialise from the centres of mass of both images. This helps when e.g. PET is wildly out of alignment, and so it is strongly recommended by default (unless all images are pre-registered). Valid values: 0 (off) or 1 (on).
 - `viz` provides interactive quality control of the relevant steps - it is recommended to inspect the interim and final outputs to ensure correct results. Valid values: 0 (off) or 1 (on).
-- `cluster_size`: threshold for cluster size in mm^3. Clusters smaller that this threshold will get discarded, unless they contain Z peak which will always be preserved.
-- `burnin`: whether output burn-in image is produced. This will modify the original T1-weighted image such that Z>3 clusters are shown as white, Z>4 clusters are shown as black, Z>5 clusters are shown as grey. The file is saved as 'burnin.nii'. Valid values: 0 (off) or 1 (on).
+- `cluster_size`: threshold for cluster size in mm<sup>3</sup>. Clusters smaller that this threshold will get discarded, unless they contain Z peak which will always be preserved.
+- `burnin`: whether output burn-in image is produced. This will modify the original T1-weighted image such that Z>3 clusters are shown as white, Z>4 clusters are shown as black, Z>5 clusters are shown as grey. The file is saved as 'burnin.nii'. Valid values: 0 (off) or 1 (on).<br>
 Any of these optional flags can be omitted, in which case they will default to the values shown above.
 
 
-![image](https://github.com/user-attachments/assets/987a5f85-21a7-4577-90c3-9b2f703ef9be)
-
-
 ### VIEWING RESULTS 
+
+![image](https://github.com/user-attachments/assets/987a5f85-21a7-4577-90c3-9b2f703ef9be)
 
 Results are automatically shown at the end, but if you just want to view existing results separately do this step:
 

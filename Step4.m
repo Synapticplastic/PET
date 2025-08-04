@@ -1,12 +1,15 @@
-function inputs = Step4(inputs)    
+function params = Step4(params)    
 
     % Prepare
     spm('defaults', 'FMRI');
-    volpairs = {'T1'; 'coregistered_FLAIR'};
-    volpairs = {volpairs; cellfun(@(vp) ['flipped_' vp], volpairs, 'un', 0)};
-    volpairs = cellfun(@(vp) cellfun(@(x) [inputs.(x) ',1'], vp, 'un', 0), volpairs, 'un', 0);
+    vp = cellfun(@(v) [v ',1'], { ...
+        params.resliced.T1, params.resliced.FLAIR, ...
+        params.flipped.T1, params.flipped.FLAIR ...
+    }, 'un', 0);
+    volpairs = {{vp{1}; vp{2}}, {vp{3}; vp{4}}};
     TPM = fullfile(fileparts(which('spm')), 'tpm', 'TPM.nii');
 
+    disp('Creating Gray/White matter maps.');
     % Generate grey (rc1) and white (rc2) matter maps
     matlabbatch = cell(2, 1);
     for i = 1:2 % coregistered, then coregistered flipped
@@ -53,10 +56,9 @@ function inputs = Step4(inputs)
     disp('Finished creating Gray/White matter maps. Now proceeding with template creation......');
 
     pause(1)
-    [~, nnT1, ~] = fileparts(inputs.T1);
-    [~, nnflipT1, ~] = fileparts(inputs.flipped_T1);
+    nnT1 = 'resliced_T1'; nnflipT1 = 'flipped_T1';
     imgs = {['rc1' nnT1], ['rc1' nnflipT1], ['rc2' nnT1], ['rc2' nnflipT1]}';
-    imgs = cellfun(@(x) [fullfile(inputs.output_dir, x) '.nii,1'], imgs, 'un', 0);
+    imgs = cellfun(@(x) [fullfile(params.outdir, x) '.nii,1'], imgs, 'un', 0);
     matlabbatch = {};
     matlabbatch{1}.spm.tools.dartel.warp.images = {imgs};
     matlabbatch{1}.spm.tools.dartel.warp.settings.template = 'Template';
@@ -88,11 +90,12 @@ function inputs = Step4(inputs)
     matlabbatch{1}.spm.tools.dartel.warp.settings.optim.lmreg = 0.01;
     matlabbatch{1}.spm.tools.dartel.warp.settings.optim.cyc = 3;
     matlabbatch{1}.spm.tools.dartel.warp.settings.optim.its = 3;
+    
     spm_jobman('run', matlabbatch);
 
     disp('Finished Warping images using Templates.');    
-    inputs.flowfields.original = fullfile(inputs.output_dir, ['u_rc1' nnT1 '_Template.nii']); % flowfield for original T1
-    inputs.flowfields.flipped = fullfile(inputs.output_dir, ['u_rc1' nnflipT1 '_Template.nii']); % flowfield for flipped T1
-    inputs.c1T1 = fullfile(inputs.output_dir, ['c1' nnT1 '.nii']); % grey matter map in the original T1 image's space
+    params.flowfields.original = fullfile(params.outdir, ['u_rc1' nnT1 '_Template.nii']); % flowfield for original T1
+    params.flowfields.flipped = fullfile(params.outdir, ['u_rc1' nnflipT1 '_Template.nii']); % flowfield for flipped T1
+    params.c1T1 = fullfile(params.outdir, ['c1' nnT1 '.nii']); % grey matter map in the original T1 image's space
 
 end

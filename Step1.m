@@ -1,26 +1,20 @@
 % MATLAB Script to Batch Import and Rename DICOM Files in the Same Directory
 
-function inputs = Step1(inputs)
+function params = Step1(params)
 
     fn = {'PET', 'T1', 'FLAIR'};
     nifti_files = {''; ''; ''};
 
     % Check for niftis
-    nii_ext = cellfun(@(x) strsplit(inputs.(x), '.'), fn, 'un', 0);
+    nii_ext = cellfun(@(x) strsplit(params.settings.(x), '.'), fn, 'un', 0);
     nii_ext = cellfun(@(x) any(strcmp(x(end - min(1, length(x) - 1): end), 'nii')), nii_ext);
 
     % Get input and their types
-    paths = cellfun(@(x) inputs.(x), fn, 'un', 0);
+    paths = cellfun(@(x) params.settings.(x), fn, 'un', 0);
     dirs = unique(paths(cellfun(@ischar, paths) & ~nii_ext), 'stable');        
 
     % Prepare niftis
-    nifti_files(nii_ext) = paths(nii_ext);    
-
-    % Remove any unexpected trailing symbols from output directory
-    inputs.output_dir = strtrim(inputs.output_dir);
-    if strcmp(inputs.output_dir(end), filesep)
-        inputs.output_dir(end) = [];
-    end
+    nifti_files(nii_ext) = paths(nii_ext);     
     
     % Get current time
     timestamp = now;
@@ -48,7 +42,7 @@ function inputs = Step1(inputs)
 
         % Import DICOM files to NIfTI format
         disp('Converting DICOM files to NIfTI format...');
-        spm_dicom_convert(hdr, 'all', 'flat', 'nii', inputs.output_dir);  % 'all' = convert all, 'flat' = single directory, 'nii' = save as NIfTI
+        spm_dicom_convert(hdr, 'all', 'flat', 'nii', params.outdir);  % 'all' = convert all, 'flat' = single directory, 'nii' = save as NIfTI
         disp('DICOM to NIfTI conversion completed successfully.');        
 
     end    
@@ -56,13 +50,13 @@ function inputs = Step1(inputs)
     % Check and sort the NIfTI files created
     if ~all(nii_ext)
 
-        new_nifti = dir(fullfile(inputs.output_dir, '*.nii'));
+        new_nifti = dir(fullfile(params.outdir, '*.nii'));
         new_nifti = new_nifti(cell2mat({new_nifti.datenum}) >= timestamp);
         new_nifti = sortrows(struct2table(new_nifti), 'datenum');
         if size(new_nifti, 1) == 1
-            new_nifti = {fullfile(inputs.output_dir, new_nifti.name)};
+            new_nifti = {fullfile(params.outdir, new_nifti.name)};
         else
-            new_nifti = fullfile(inputs.output_dir, new_nifti.name);
+            new_nifti = fullfile(params.outdir, new_nifti.name);
         end        
         if sum(~nii_ext) ~= length(new_nifti)
             error('Number of provided and number of converted NIfTI files do not add up to 3');
@@ -76,10 +70,10 @@ function inputs = Step1(inputs)
         for i = 1:length(nifti_files)
             if nii_ext(i); continue; end % do not touch NIfTIs explicitly provided
             old_name = nifti_files{i};
-            new_name = fullfile(inputs.output_dir, desired_names{i});
+            new_name = fullfile(params.outdir, desired_names{i});
             movefile(old_name, new_name);
             disp(['Renamed ', old_name, ' to ', new_name]);
-            inputs.(fn{i}) = new_name;
+            params.settings.(fn{i}) = new_name;
         end
 
         disp('All files renamed successfully as PET.nii, T1.nii, and FLAIR.nii.');
@@ -87,19 +81,18 @@ function inputs = Step1(inputs)
     end
 
     for i = 1:length(fn)
-        target_path = [inputs.output_dir filesep 'original_' fn{i} '.nii'];
-        if ~strcmp(inputs.(fn{i}), target_path)
-            if endsWith(inputs.(fn{i}), '.nii.gz') % spm dislikes .nii.gz
-                gunzip(inputs.(fn{i}), inputs.output_dir);
-                [~, nn, ~] = fileparts(inputs.(fn{i}));
-                extracted_path = [inputs.output_dir filesep nn];
-                if ~strcmp(extracted_path, target_path)
-                    movefile(extracted_path, target_path)
+        params.original.(fn{i}) = [params.outdir filesep 'original_' fn{i} '.nii'];
+        if ~strcmp(params.settings.(fn{i}), params.original.(fn{i}))
+            if endsWith(params.settings.(fn{i}), '.nii.gz') % spm dislikes .nii.gz
+                gunzip(params.settings.(fn{i}), params.outdir);
+                [~, nn, ~] = fileparts(params.settings.(fn{i}));
+                extracted_path = [params.outdir filesep nn];
+                if ~strcmp(extracted_path, params.original.(fn{i}))
+                    movefile(extracted_path, params.original.(fn{i}))
                 end
             else
-                copyfile(inputs.(fn{i}), target_path);
+                copyfile(params.settings.(fn{i}), params.original.(fn{i}));
             end
-            inputs.(fn{i}) = target_path;
         end
     end
 

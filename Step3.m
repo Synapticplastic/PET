@@ -25,6 +25,8 @@ function params = Step3(params)
             % Run SPM12 Check Reg with the specified files
             disp('Loading SPM Check Reg for comparison...');
             spm_check_registration(params.resliced.(fn{i}), params.flipped.(fn{i}));
+            spm_orthviews('Caption', 1, 'Please confirm that the flip was applied along the correct axis.');
+            spm_orthviews('Redraw');
             disp('Check Reg complete. Please confirm that the flip was applied along the correct axis.');
             disp('Viewer is open. Press any key in the command window to continue.');
             pause;  % Waits for any key press in the command window

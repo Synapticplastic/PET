@@ -92,10 +92,16 @@ function params = Step4(params)
     matlabbatch{1}.spm.tools.dartel.warp.settings.optim.its = 3;
     
     spm_jobman('run', matlabbatch);
-
+    
     disp('Finished Warping images using Templates.');    
     params.flowfields.original = fullfile(params.outdir, ['u_rc1' nnT1 '_Template.nii']); % flowfield for original T1
     params.flowfields.flipped = fullfile(params.outdir, ['u_rc1' nnflipT1 '_Template.nii']); % flowfield for flipped T1
     params.c1T1 = fullfile(params.outdir, ['c1' nnT1 '.nii']); % grey matter map in the original T1 image's space
+    
+    fnames = {dir(params.outdir).name};
+    template_names = cellfun(@(s) ~isempty(regexp(s, '^Template_(\d+)\.nii$', 'once')), fnames);
+    template_ids = cellfun(@(s) regexp(s, '^Template_(\d+)\.nii$', 'tokens'), fnames(template_names), 'un', 0);
+    template_max = max(cellfun(@(t) str2double(t{1}{1}), template_ids));
+    params.dartel_template = fullfile(params.outdir, ['Template_' num2str(template_max) '.nii']);
 
 end

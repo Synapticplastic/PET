@@ -124,7 +124,7 @@ function params = Step5(params)
         blob.min = 0;
         st.vols{2}.blobs{i} = blob;
     end    
-    spm_orthviews('Caption', 1, 'See final results (right is right, left is left!)');
+    spm_orthviews('Caption', 1, ['PET asymmetry Z>' num2str(min_thr) ' (right is right, left is left!)']);
     spm_orthviews('Redraw');
 
 end
@@ -309,6 +309,14 @@ function [label_map, exclude_labels] = read_xml_labels(path)
     exclude = {'Ventricle', 'White Matter', 'Lat Vent', 'CSF', ...
         'vessel', 'Brain Stem', 'Optic Chiasm'};
 
+    % Remove abbreviations
+    abbr = {'ACgG' 'AIns' 'AOrG' 'AnG' 'CO' 'Calc' 'Cun' 'Ent' 'FO' ...
+        'FRP' 'FuG' 'GRe' 'IOG' 'ITG' 'LOrG' 'LiG' 'MCgG' 'MFC' 'MFG' ...
+        'MOG' 'MOrG' 'MPoG' 'MPrG' 'MSFG' 'MTG' 'OCP' 'OFuG' 'OpIFG' ...
+        'OrIFG' 'PCgG' 'PCu' 'PHG' 'PIns' 'PO' 'POrG' 'PP' 'PT' 'PoG' ...
+        'PrG' 'SCA' 'SFG' 'SMC' 'SMG' 'SOG' 'SPL' 'STG' 'TMP' 'TTG' ...
+        'TrIFG'};
+
     % Read and parse the XML file
     xml = xmlread(path);
     
@@ -333,7 +341,7 @@ function [label_map, exclude_labels] = read_xml_labels(path)
                     case 'name'
                         name_val = strtrim(char(node.getTextContent()));
                         words = split(name_val);
-                        if length(words) >= 2 && strlength(words(2)) == 3
+                        if length(words) > 2 && any(strcmp(words(2), abbr))
                             words(2) = [];
                         end
                         name_val = lower(strjoin(words, ' '));
@@ -397,10 +405,17 @@ function generate_report_template(report, report_path)
 
         if isfield(report(r_idx), 'regions') && isfield(report(r_idx), 'peak')
             if length(report(r_idx).regions) == 1 && strcmp(report(r_idx).regions{1}, report(r_idx).peak)
-                fprintf(fid, '<p>Cluster involves the %s only.</p>', report(r_idx).peak);
+                fprintf(fid, '<p>The cluster involves the %s only.</p>', report(r_idx).peak);
             else
-                fprintf(fid, '<p>Cluster peaks in the %s and involves the following areas: %s.</p>', ...
-                    report(r_idx).peak, strjoin(report(r_idx).regions, ', '));
+                other_regions = setdiff(report(r_idx).regions, report(r_idx).peak);
+                if length(other_regions) > 2
+                    other_regions = {strjoin(other_regions(1:end-1), ', '), other_regions{end}};
+                    other_regions = strjoin(other_regions, ', and ');
+                else
+                    other_regions = strjoin(other_regions, ' and ');
+                end
+                fprintf(fid, '<p>The cluster peaks in the %s and also involves the %s.</p>', ...
+                    report(r_idx).peak, other_regions);
             end
         end
         fprintf(fid, '</td></tr>');
@@ -438,6 +453,7 @@ function min_thr = generate_report(params, V_Z)
     % prepare data
     Z_data = spm_read_vols(V_Z);
 
+    % set up region reporting
     report_regions = isfield(params.settings, 'regions') && params.settings.regions; % off by default
     if report_regions
         labels_xml_path = fullfile(fileparts(which('spm')), 'tpm', 'labels_Neuromorphometrics.xml');
@@ -445,6 +461,14 @@ function min_thr = generate_report(params, V_Z)
         atlas_hdr = spm_vol(strrep(labels_xml_path, '.xml', '.nii'));
         atlas_vol = spm_read_vols(atlas_hdr);
         cutoff_percent = 5; % for each label, minimum % of total cluster volume for it to be reported
+
+        spm('defaults','fmri');
+        spm_jobman('initcfg');
+        atlas_vox = sqrt(sum(atlas_hdr.mat(1:3, 1:3).^2)); % voxel size of atlas
+        corners = [1 1 1; atlas_hdr.dim];
+        atlas_bb = corners * atlas_hdr.mat(1:3, 1:3)' + atlas_hdr.mat(1:3, 4)'; % bb of atlas
+        flowfield = {params.flowfields.original};
+        dartel_template = {params.dartel_template};
     end
 
     % work out min_cluster_size in voxels
@@ -494,13 +518,15 @@ function min_thr = generate_report(params, V_Z)
 
         if report_regions
     
-            % Get it into template space
-            matlabbatch = {};
-            matlabbatch{1}.spm.tools.dartel.crt_warped.flowfields = {params.flowfields.original};
-            matlabbatch{1}.spm.tools.dartel.crt_warped.images = {{AS_hdr.fname}};
-            matlabbatch{1}.spm.tools.dartel.crt_warped.jactransf = 0;
-            matlabbatch{1}.spm.tools.dartel.crt_warped.K = 6;
-            matlabbatch{1}.spm.tools.dartel.crt_warped.interp = 1;
+            % Get the cluster into MNI space
+            clear matlabbatch
+            matlabbatch{1}.spm.tools.dartel.mni_norm.template = dartel_template;
+            matlabbatch{1}.spm.tools.dartel.mni_norm.data.subjs.flowfields = flowfield;
+            matlabbatch{1}.spm.tools.dartel.mni_norm.data.subjs.images = {{AS_hdr.fname}};
+            matlabbatch{1}.spm.tools.dartel.mni_norm.vox = atlas_vox;
+            matlabbatch{1}.spm.tools.dartel.mni_norm.bb = atlas_bb;
+            matlabbatch{1}.spm.tools.dartel.mni_norm.preserve = 0;
+            matlabbatch{1}.spm.tools.dartel.mni_norm.fwhm = [0 0 0];
             spm_jobman('run', matlabbatch);
     
             % Read the volume and check which labels it contains

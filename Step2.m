@@ -67,7 +67,7 @@ function params = Step2(params)
             warndlg('An undesired flip may have occurred during registration.', 'Undesired Flip');
         end
         current = strrep(params.original.(sources{i}), 'original', 'reg_check_hdr_reg');
-        renamed = strrep(params.original.(sources{i}), 'original', 'full_reg');
+        renamed = strrep(params.original.(sources{i}), 'original', 'resliced');
         movefile(current, renamed);
         params.resliced.(sources{i}) = renamed;
 

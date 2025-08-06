@@ -82,7 +82,7 @@ All of these flags are present in `example_inputs.json` provided with the code; 
 
 ### VIEWING RESULTS 
 
-![image](https://github.com/user-attachments/assets/987a5f85-21a7-4577-90c3-9b2f703ef9be)
+![image](https://github.com/user-attachments/assets/80220561-9b7b-4101-8085-ee257329989a)
 
 Results are automatically shown at the end, but to view them separately, `view_PET_AI.m` should be used:
 

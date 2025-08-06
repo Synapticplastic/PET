@@ -25,11 +25,11 @@ Epilepsy Neurosurgery Fellow, University of Toronto
 
 ### GUIDELINE FOR USE:
 
-1. Download the repository. Ensure MATLAB and SPM12 is installed.
+1. Download the repository. Ensure MATLAB and SPM12 are installed.
 
 2. Export PET, T1 MRI, FLAIR MRI scans of patients. Ideally the scans are done within the same year, and are thinly sliced. 
 
-3. Consider cropping the images to contain brain only if excessive neck is present.
+3. Consider cropping the images to contain brain only if excessive neck is present (may help registration).
 
 4. PET images will come as "PET" or "NACPET". Choose the "PET" one, as this is attenuation corrected.
 
@@ -59,30 +59,41 @@ These are the required inputs that should always be present. In addition, the fo
 
 ```
   "centre_of_mass": 1,
-  "viz": 1,
+  "thr": 3,
   "cluster_size": 100,
-  "burnin": 0
+  "report": 1,
+  "blanks": 1,
+  "regions": 0, 
+  "burnin": 0,
+  "viz": 1
 ```
 
 - `centre_of_mass` lets registration initialise from the centres of mass of both images. This helps when e.g. PET is wildly out of alignment, and so it is strongly recommended by default (unless all images are pre-registered). Valid values: 0 (off) or 1 (on).
-- `viz` provides interactive quality control of the relevant steps - it is recommended to inspect the interim and final outputs to ensure correct results. Valid values: 0 (off) or 1 (on).
+- `thr` is the minimum Z-score for the PET asymmetry to be demonstrated on outputs. Valid values: numbers from 0 and above.
 - `cluster_size`: threshold for cluster size in mm<sup>3</sup>. Clusters smaller that this threshold will get discarded, unless they contain Z peak which will always be preserved.
+- `report`: produce a report which will contain per-cluster images and data. Valid values: 0 (off) or 1 (on).
+- `blanks`: given `report` is on, will append empty fields that can be populated with clinical data. Valid values: 0 (off) or 1 (on).
+- `regions`: will attempt an automated anatomical description of every cluster. Experimental feature, always double-check! Valid values: 0 (off) or 1 (on).
 - `burnin`: whether output burn-in image is produced. This will modify the original T1-weighted image such that Z>3 clusters are shown as white, Z>4 clusters are shown as black, Z>5 clusters are shown as grey. The file is saved as 'burnin.nii'. Valid values: 0 (off) or 1 (on).
+- `viz` provides interactive quality control of the relevant steps - it is recommended to inspect the interim and final outputs to ensure correct results. Valid values: 0 (off) or 1 (on).
 
 Any of these optional flags can be omitted, in which case they will default to the values shown above.
+All of the above are present in the `example_inputs.json` file provided with the code; this can be copied for each set of data and modified accordingly.
 
 ### VIEWING RESULTS 
 
 ![image](https://github.com/user-attachments/assets/987a5f85-21a7-4577-90c3-9b2f703ef9be)
 
-Results are automatically shown at the end, but if you just want to view existing results separately do this step:
+Results are automatically shown at the end, but to view them separately, `view_PET_AI.m` should be used:
 
-1. The viewer.m script will set the anatomical unflipped T1 as background..
-2. The Z3, Z4, and Z5.nii overlays are simultaneously superimposed to see the asymmetrical regions in order of strength of asymmetry. 
-3. Z3,4,5 with "clustered" suffix can be used instead if only want to see big clusters of asymmetry
+1. One option is to type `view_PET_AI(params)` where `params` is loaded in advance from the output folder's `params_step_5.mat` file. 
+2. The other option is to copy the viewer file into the output folder, navigate there in Matlab, and type `view_PET_AI()`.
 
-**NOTE! The viewer will demonstrate results in "anatomical" orientation (right is right, left is left). The cluster image files, however, will stay aligned with the original T1w image file.**
+**NOTE! The viewer will demonstrate results in "anatomical" orientation (right is right, left is left). The cluster image files (.nii), however, will stay aligned with the original T1w image file.**
 
+### EDITING THE REPORT
+
+Report is produced as HTML and image files. This is more flexible than generating a Microsoft Word document using Matlab directly. The HTML file can be subsequently opened with Microsoft Word, edited as needed (e.g., populating with clinical data), and stored as a document file or exported as a PDF. Note that thus produces .doc(x) file will still have the images linked, not embedded - so once the report is finished, it is recommended to save the final version in PDF format.
 
 ### EXPORTING RESULTS TO DICOM:
 

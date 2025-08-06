@@ -1,4 +1,4 @@
-function asymmetry_index_wrapper(inputs_file)
+function params = asymmetry_index_wrapper(inputs_file)
     
     % Ensure SPM12 is in MATLAB path
     if isempty(which('spm'))

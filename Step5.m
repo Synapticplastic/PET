@@ -86,46 +86,17 @@ function params = Step5(params)
     V_Z.fname = outputs.Z_AI_image; % Output filename
     
     % Write the Z-score image to disk
-    spm_write_vol(V_Z, Z_data);
-
-    % Read it again (otherwise there is some garbage generated)
-    V_Z = spm_vol(V_Z.fname);
+    spm_write_vol(V_Z, Z_data);    
     
     % Generate report - this also saves niftis with individual clusters
-    min_thr = generate_report(params, V_Z);
+    generate_report(params);
 
     % Generate burn-in image
-    perform_burnin(params, V_Z);
+    perform_burnin(params);
 
     % Show outputs
-    disp('Review the final results...');    
-    spm('defaults', 'fmri');
-    spm_jobman('initcfg');
-    spm_orthviews('Reset');
-    spm_check_registration(params.original.T1);
-
-    % fiddle with orthviews' internal data to get masking working
-    global st;
-    st.vols{2} = st.vols{1};
-    spm_orthviews('AddTrueColourImage', 1, V_Z.fname, turbo(256), 0, max(Z_data(~isnan(Z_data))), 0);
-    spm_orthviews('AddColouredImage', 2, V_Z.fname, [1, 0, 0]);
-    mask = ~isnan(Z_data) & Z_data > min_thr;
-    data = Z_data / max(Z_data(~isnan(Z_data)));
-    cmap = turbo(256);
-    Z_RGB = cmap(uint16(uint8(data .* mask * 255)) + 1, :);
-    Z_RGB(~mask(:), :) = 0;
-    blob = st.vols{2}.blobs{1};
-    for i = 1:3
-        blob.vol = reshape(Z_RGB(:, i), size(data));
-        c = zeros(1, 3);
-        c(i) = 1;
-        blob.colour = c;
-        blob.max = 1;
-        blob.min = 0;
-        st.vols{2}.blobs{i} = blob;
-    end    
-    spm_orthviews('Caption', 1, ['PET asymmetry Z>' num2str(min_thr) ' (right is right, left is left!)']);
-    spm_orthviews('Redraw');
+    disp('Review the final results...');
+    view_PET_AI(params);
 
 end
 
@@ -360,9 +331,8 @@ function [label_map, exclude_labels] = read_xml_labels(path)
     end    
 end
 
-function generate_report_template(report, report_path)
-
-    pad = 5;                        % padding pixels
+function generate_report_template(report, report_path, blanks)
+ 
     dim = 175;                      % image dimensions in pixels
     gap = 10;                       % gap between images in a panel in pixels
     cbw = 20;                       % legend width
@@ -374,38 +344,69 @@ function generate_report_template(report, report_path)
 
     % start XML report
     html_path = fullfile(report_path, 'report.html');
-    fid = fopen(html_path, 'w');    
+    fid = fopen(html_path, 'w');
+
+    if blanks
+        first_blank = sprintf([ ...
+            '<p style="font-family: Aptos; font-size: 12pt; color: #000000">' ...
+            '<b>Patient name:</b> ...<br><b>MRN:</b> ...<br><b>Referring epileptologist:</b> ...</p>' ...
+            '<p style="font-family: Aptos; font-size: 16pt; color: #0f4761">Clinical Report</p>' ...
+            '<p style="font-family: Aptos; font-size: 12pt; color: #000000">...</p>' ...
+            ]);        
+        last_blank = sprintf([ ...
+            '<p style="font-family: Aptos; font-size: 14pt; color: #0f4761">Impression:</p>' ...
+            '<p style="font-family: Aptos; font-size: 12pt; color: #000000">...</p>' ...
+            ]);
+    else
+        first_blank = ''; last_blank = '';
+    end
+
+    date = sprintf('<b>Date:</b> %s', datetime('today', 'Format', 'MMMM d, yyyy'));
+
+    technique = sprintf([ ...
+        '<b>Technique:</b> High-resolution 3D T1-weighted and 3D FLAIR ' ...
+        'brain MRI sequences were co-registered with interictal FDG-PET ' ...
+        'for metabolic asymmetry analysis. PASCOM software* generated a ' ...
+        'hypometabolism asymmetry heatmap overlaid on the T1-weighted image, ' ...
+        'with higher Z-scores indicating greater relative hypoperfusion. ' ...
+        '<br><br><u>Note: left is left on PASCOM output.</u>']);
+
+    reference = sprintf([ ...
+        '* Custom script by Anton Fomenko: <a href="https://github.com/Synapticplastic/PET">' ...
+        'github.com/Synapticplastic/PET</a>. Based on Aslam et al. (2022), PMID: ' ...
+        '<a href="https://doi.org/10.3171/2022.6.JNS22717">35932262</a>']);
+
     fprintf(fid, [ ...
-        '<!DOCTYPE html>\n<html>\n<head>\n<title>Asymmetry Index pipeline report</title><style>' ...
-            'table { width: %dpx; border-collapse: collapse; table-layout: fixed; } ' ...
-            'td { padding: %dpx; vertical-align: top; } '...
-            'tr { page-break-inside: avoid; } ' ...
-            'h1 { font-size: 16px; font-family: Aptos; color: #0F4761; } ' ...
-            'h2 { font-size: 14px; font-family: Aptos; color: #0F4761; } ' ...
-            'h3 { font-size: 12px; font-family: Aptos; font-style: italic; color: #0F4761; } ' ...
-        '</style></head>\n<body><table>\n' ], dim * 3 + pad * 4, pad);
+        '<!DOCTYPE html><html><head><title>Asymmetry Index pipeline report</title></head>' ...
+        '<body><table width="%d"><tr><td>%s' ...
+        '<p style="font-family: Aptos; font-size: 16pt; color: #0f4761">PET-Asymmetry Report</p>' ...
+        '<p style="font-family: Aptos; font-size: 12pt; color: #000000">%s</p>' ...
+        '<p style="font-family: Aptos; font-size: 12pt; color: #000000">%s</p>' ...
+        '<p style="font-family: Aptos; font-size: 10pt; color: #000000">%s</p>' ...
+        '<p style="font-family: Aptos; font-size: 14pt; color: #0f4761">Findings:</p>' ], ...
+        ipw + 25, first_blank, date, technique, reference);
 
     % commence per-cluster reporting
     for r_idx = 1:length(report)
 
         % subtitle
-        fprintf(fid, '<tr><td><h2>Cluster %d</h2></td></tr>', r_idx);
+        fprintf(fid, '<p style="font-family: Aptos; font-size: 12pt; color: #0f4761"><i>Cluster %d</i></p>', r_idx);
 
-        % images
+        % image
         fname = ['cluster_' num2str(r_idx) '.png'];
         impath = fullfile(report_path, fname);
         imwrite(report(r_idx).images, impath);
-        fprintf(fid, '<tr><td><img src="%s" width="%d" height="%d"></td></tr>', fname, ipw, dim);
+        fprintf(fid, '<center><img src="%s" width="%d" height="%d"/></center>', fname, ipw, dim);
 
         % cluster report
-        fprintf(fid, '<tr><td><p>');
-        fprintf(fid, '<b>Cluster volume:</b> %.2f cl <br>', report(r_idx).volume / 1e4);
-        fprintf(fid, '<b>Highest Z-score:</b> %.2f, <b>mean:</b> %.2f, <b>lowest:</b> %.2f<br>', report(r_idx).max, report(r_idx).mean, report(r_idx).min);
-        fprintf(fid, '</p>');
+        fprintf(fid, '<ul style="font-family: Aptos; font-size: 12pt">');
+        fprintf(fid, '<li><b>Volume:</b> %.2f cl</li>', report(r_idx).volume / 1e4);
+        fprintf(fid, '<li><b>Z-score:</b> highest: %.2f, mean: %.2f, lowest: %.2f</li>', report(r_idx).max, report(r_idx).mean, report(r_idx).min);        
 
         if isfield(report(r_idx), 'regions') && isfield(report(r_idx), 'peak')
+            fprintf(fid, '<li><b>Region:</b> ');
             if length(report(r_idx).regions) == 1 && strcmp(report(r_idx).regions{1}, report(r_idx).peak)
-                fprintf(fid, '<p>The cluster involves the %s only.</p>', report(r_idx).peak);
+                fprintf(fid, 'The cluster involves the %s only.', report(r_idx).peak);
             else
                 other_regions = setdiff(report(r_idx).regions, report(r_idx).peak);
                 if length(other_regions) > 2
@@ -414,32 +415,38 @@ function generate_report_template(report, report_path)
                 else
                     other_regions = strjoin(other_regions, ' and ');
                 end
-                fprintf(fid, '<p>The cluster peaks in the %s and also involves the %s.</p>', ...
+                fprintf(fid, 'The cluster peaks in the %s and also involves the %s.', ...
                     report(r_idx).peak, other_regions);
             end
+            fprintf(fid, '</li>');
         end
-        fprintf(fid, '</td></tr>');
+
+        if blanks
+            fprintf(fid, '<li><b>Interpretation:</b> ...</li>');
+            fprintf(fid, '<li><b>Conclusion:</b> ...</li>');
+        end
+        fprintf(fid, '</ul>');
 
     end
 
     % wrap up and open
-    fprintf(fid, '</table></body>\n</html>');    
+    fprintf(fid, '%s</td></tr></table></body>\n</html>', last_blank);
     fclose(fid);
     web(html_path, '-browser');
 
 end
 
-function min_thr = generate_report(params, V_Z)
+function generate_report(params)
+
+    if isfield(params.settings, 'report') && ~params.settings.report % on by default
+        return
+    end
 
     % prepare thresholds    
     if ~isfield(params.settings, 'thr')
         min_thr = 3;
     else
         min_thr = params.settings.thr;
-    end
-
-    if isfield(params.settings, 'report') && ~params.settings.report % on by default
-        return
     end
 
     % prepare clustering settings
@@ -451,6 +458,7 @@ function min_thr = generate_report(params, V_Z)
     end
 
     % prepare data
+    V_Z = spm_vol(fullfile(params.outdir, 'Z_AI_image.nii'));
     Z_data = spm_read_vols(V_Z);
 
     % set up region reporting
@@ -557,11 +565,12 @@ function min_thr = generate_report(params, V_Z)
     end
 
     % generate report
-    generate_report_template(report, fullfile(params.outdir, 'report'));
+    blanks = ~isfield(params.settings, 'blanks') || params.settings.blanks; % on by default
+    generate_report_template(report, fullfile(params.outdir, 'report'), blanks);
 
 end
 
-function perform_burnin(params, Z_hdr)
+function perform_burnin(params)
     
     if ~isfield(params.settings, 'burnin') || ~params.settings.burnin % off by default
         return
@@ -585,7 +594,8 @@ function perform_burnin(params, Z_hdr)
     dim = burnin_hdr.dim;
     [x, y, z] = ndgrid(1:dim(1), 1:dim(2), 1:dim(3)); % original grid voxel coordinates
     vox_orig = (orig2mni(1:3, 1:3) * [x(:) y(:) z(:)]' + orig2mni(1:3, 4))'; % original grid voxels coordinates in mni grid coordinate space
-    interp_vals = spm_sample_vol(Z_hdr, vox_orig(:,1), vox_orig(:,2), vox_orig(:,3), 1); % Z_data values corresponding to the original grid
+    V_Z = spm_vol(fullfile(params.outdir, 'Z_AI_image.nii'));
+    interp_vals = spm_sample_vol(V_Z, vox_orig(:,1), vox_orig(:,2), vox_orig(:,3), 1); % Z_data values corresponding to the original grid
     Z_data_orig = reshape(interp_vals, dim);
 
     % burn in Z levels

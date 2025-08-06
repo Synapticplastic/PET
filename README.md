@@ -60,7 +60,7 @@ These are the required inputs that should always be present. In addition, the fo
 ```
   "centre_of_mass": 1,
   "thr": 3,
-  "cluster_size": 100,
+  "cluster_size": 0.1,
   "report": 1,
   "blanks": 1,
   "regions": 0, 
@@ -68,17 +68,17 @@ These are the required inputs that should always be present. In addition, the fo
   "viz": 1
 ```
 
-- `centre_of_mass` lets registration initialise from the centres of mass of both images. This helps when e.g. PET is wildly out of alignment, and so it is strongly recommended by default (unless all images are pre-registered). Valid values: 0 (off) or 1 (on).
-- `thr` is the minimum Z-score for the PET asymmetry to be demonstrated on outputs. Valid values: numbers from 0 and above.
-- `cluster_size`: threshold for cluster size in mm<sup>3</sup>. Clusters smaller that this threshold will get discarded, unless they contain Z peak which will always be preserved.
-- `report`: produce a report which will contain per-cluster images and data. Valid values: 0 (off) or 1 (on).
-- `blanks`: given `report` is on, will append empty fields that can be populated with clinical data. Valid values: 0 (off) or 1 (on).
-- `regions`: will attempt an automated anatomical description of every cluster. Experimental feature, always double-check! Valid values: 0 (off) or 1 (on).
-- `burnin`: whether output burn-in image is produced. This will modify the original T1-weighted image such that Z>3 clusters are shown as white, Z>4 clusters are shown as black, Z>5 clusters are shown as grey. The file is saved as 'burnin.nii'. Valid values: 0 (off) or 1 (on).
-- `viz` provides interactive quality control of the relevant steps - it is recommended to inspect the interim and final outputs to ensure correct results. Valid values: 0 (off) or 1 (on).
+- `centre_of_mass` lets registration initialise from the centres of mass of both images. This helps when e.g. PET is wildly out of alignment, and so it is strongly recommended by default (unless all images are pre-registered). Valid values: 0&nbsp;/&nbsp;1.
+- `thr` is the minimum Z-score for the PET asymmetry to be demonstrated on outputs. Valid values: any non-negative number.
+- `cluster_size`: threshold for cluster size in cc. Clusters smaller that this threshold will get discarded, unless they contain Z peak which will always be preserved. Valid values: any non-negative number.
+- `report`: produce a report which will contain per-cluster images and data. Valid values: 0&nbsp;/&nbsp;1.
+- `blanks`: given `report` is on, will append empty fields that can be populated with clinical data. Valid values: 0&nbsp;/&nbsp;1.
+- `regions`: given `report` is on, will attempt an automated anatomical description of every cluster. Experimental feature, always double-check! Valid values: 0&nbsp;/&nbsp;1.
+- `burnin`: whether output burn-in image is produced. This will modify the original T1-weighted image such that Z>3 clusters are shown as white, Z>4 clusters are shown as black, Z>5 clusters are shown as grey. The file is saved as `burnin.nii`. Valid values: 0&nbsp;/&nbsp;1.
+- `viz` provides interactive quality control of the relevant steps - it is recommended to inspect the interim and final outputs to ensure the correctness of results. Valid values: 0&nbsp;/&nbsp;1.
 
 Any of these optional flags can be omitted, in which case they will default to the values shown above.
-All of the above are present in the `example_inputs.json` file provided with the code; this can be copied for each set of data and modified accordingly.
+All of these flags are present in `example_inputs.json` provided with the code; this can be copied for each set of data and modified accordingly.
 
 ### VIEWING RESULTS 
 
@@ -97,11 +97,11 @@ Report is produced as HTML and image files, stored in the `report` folder of the
 
 ### EXPORTING RESULTS TO DICOM:
 
-Open output in MRIcron to ensure Burned in is adequate of new nifti. 
+Open output in MRIcron to ensure burned-in is adequate of new nifti. 
 
-1. To use in BrainLab/NeuroMate planning station must EXPORT burned-in .nii AS DICOM 
+1. To use in BrainLab/NeuroMate planning station must EXPORT `burnin.nii` AS DICOM 
 2. Use 3Dslicer --> Module> DICOM  --> EXPORT as DICOM series --> Populate tag fields.
-3. You should now have a folder of DICOMs ready for use. Can put this on USB stick and use on planning software (Brainlab, Stealth, Neuromate). It must be noted that any such use is purely experimental.
+3. You should now have a folder of DICOMs ready for use. Can put this on USB stick and use on planning software (Brainlab, Stealth, Neuromate). **It must be noted that any such use is purely experimental.**
 
 
 > Reference: Aslam S, Damodaran N, Rajeshkannan R, Sarma M, Gopinath S, Pillai A. Asymmetry index in anatomically symmetrized FDG-PET for improved epileptogenic focus detection in pharmacoresistant epilepsy. J Neurosurg. 2022 Aug 5;138(3):828-836. doi: 10.3171/2022.6.JNS22717. PMID: 35932262

@@ -367,11 +367,10 @@ function generate_report_template(report, params)
     date = sprintf('<b>Date:</b> %s', datetime('today', 'Format', 'MMMM d, yyyy'));
 
     if ~isfield(params.settings, 'cluster_size')
-        cluster_size = 100; % default
+        cluster_size = .1; % default
     else
         cluster_size = params.settings.cluster_size; 
     end
-    cluster_size = cluster_size / 1e3;
 
     if ~isfield(params.settings, 'thr')
         min_thr = 3; % default
@@ -418,7 +417,7 @@ function generate_report_template(report, params)
 
         % cluster report
         fprintf(fid, '<ul style="font-family: Aptos; font-size: 12pt">');
-        fprintf(fid, '<li><b>Volume:</b> %.2f cc</li>', report(r_idx).volume / 1e3);
+        fprintf(fid, '<li><b>Volume:</b> %.2f cc</li>', report(r_idx).volume);
         fprintf(fid, '<li><b>Z-score:</b> highest: %.2f, mean: %.2f, lowest: %.2f</li>', report(r_idx).max, report(r_idx).mean, report(r_idx).min);        
 
         if isfield(report(r_idx), 'regions') && isfield(report(r_idx), 'peak')
@@ -469,8 +468,8 @@ function generate_report(params)
 
     % prepare clustering settings
     conn = 26; % use 26-connectivity for clustering - hard-code for noow
-    if ~isfield(params.settings, 'cluster_size') % minimum cluster size in mm³
-        min_cluster_size = 100; 
+    if ~isfield(params.settings, 'cluster_size') % minimum cluster size in cc
+        min_cluster_size = .1; 
     else
         min_cluster_size = params.settings.cluster_size;
     end

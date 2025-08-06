@@ -39,7 +39,7 @@ Epilepsy Neurosurgery Fellow, University of Toronto
 
 7. Run asymmetry_index_wrapper.m and with a string containing the path to your JSON as input.
 
-8. In case any individual step needs to be re-run, the output folder will contain mat-files with inputs into every step which can be re-used.
+8. If an individual step needs to be re-run, the output folder will contain `params_step_*.mat` files with inputs for every step. This is particularly helpful for experimenting with different Z-score and/or cluster volume thresholds, in which case Step5 can be repeated with a different `thr` and/or `cluster_size` setting, respectively, in very little time.
 
 
 ### CREATING INPUTS JSON:
@@ -93,7 +93,7 @@ Results are automatically shown at the end, but to view them separately, `view_P
 
 ### EDITING THE REPORT
 
-Report is produced as HTML and image files. This is more flexible than generating a Microsoft Word document using Matlab directly. The HTML file can be subsequently opened with Microsoft Word, edited as needed (e.g., populating with clinical data), and stored as a document file or exported as a PDF. Note that thus produces .doc(x) file will still have the images linked, not embedded - so once the report is finished, it is recommended to save the final version in PDF format.
+Report is produced as HTML and image files, stored in the `report` folder of the output directory. This is more flexible than generating a Microsoft Word document with Matlab directly. The HTML file can be subsequently opened with Microsoft Word, edited as needed (e.g., populating with clinical data), and stored as a document file or exported as a PDF. Note that thus produced .doc(x) file will not have the images embedded (just linked) - so once the report is finished, it is recommended to save the final version in PDF format.
 
 ### EXPORTING RESULTS TO DICOM:
 

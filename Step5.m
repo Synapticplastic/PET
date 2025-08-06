@@ -331,13 +331,14 @@ function [label_map, exclude_labels] = read_xml_labels(path)
     end    
 end
 
-function generate_report_template(report, report_path, blanks)
+function generate_report_template(report, params)
  
     dim = 175;                      % image dimensions in pixels
     gap = 10;                       % gap between images in a panel in pixels
     cbw = 20;                       % legend width
     ipw = dim * 3 + gap * 3 + cbw;  % image panel width in pixels
-
+    
+    report_path = fullfile(params.outdir, 'report');
     if ~exist(report_path, 'dir')
         mkdir(report_path)
     end
@@ -345,6 +346,8 @@ function generate_report_template(report, report_path, blanks)
     % start XML report
     html_path = fullfile(report_path, 'report.html');
     fid = fopen(html_path, 'w');
+
+    blanks = ~isfield(params.settings, 'blanks') || params.settings.blanks; % on by default
 
     if blanks
         first_blank = sprintf([ ...
@@ -363,13 +366,28 @@ function generate_report_template(report, report_path, blanks)
 
     date = sprintf('<b>Date:</b> %s', datetime('today', 'Format', 'MMMM d, yyyy'));
 
+    if ~isfield(params.settings, 'cluster_size')
+        cluster_size = 100; % default
+    else
+        cluster_size = params.settings.cluster_size; 
+    end
+    cluster_size = cluster_size / 1e3;
+
+    if ~isfield(params.settings, 'thr')
+        min_thr = 3; % default
+    else
+        min_thr = params.settings.thr; 
+    end
+
     technique = sprintf([ ...
         '<b>Technique:</b> High-resolution 3D T1-weighted and 3D FLAIR ' ...
         'brain MRI sequences were co-registered with interictal FDG-PET ' ...
         'for metabolic asymmetry analysis. PASCOM software* generated a ' ...
         'hypometabolism asymmetry heatmap overlaid on the T1-weighted image, ' ...
         'with higher Z-scores indicating greater relative hypoperfusion. ' ...
-        '<br><br><u>Note: left is left on PASCOM output.</u>']);
+        'Z-scores were thresholded at %.02f, and clusters with volume ' ...
+        'below %.02f cc were omitted from the report.<br><br>' ...
+        '<u>Note: left is left on PASCOM output.</u>'], min_thr, cluster_size);
 
     reference = sprintf([ ...
         '* Custom script by Anton Fomenko: <a href="https://github.com/Synapticplastic/PET">' ...
@@ -400,7 +418,7 @@ function generate_report_template(report, report_path, blanks)
 
         % cluster report
         fprintf(fid, '<ul style="font-family: Aptos; font-size: 12pt">');
-        fprintf(fid, '<li><b>Volume:</b> %.2f cl</li>', report(r_idx).volume / 1e4);
+        fprintf(fid, '<li><b>Volume:</b> %.2f cc</li>', report(r_idx).volume / 1e3);
         fprintf(fid, '<li><b>Z-score:</b> highest: %.2f, mean: %.2f, lowest: %.2f</li>', report(r_idx).max, report(r_idx).mean, report(r_idx).min);        
 
         if isfield(report(r_idx), 'regions') && isfield(report(r_idx), 'peak')
@@ -565,8 +583,7 @@ function generate_report(params)
     end
 
     % generate report
-    blanks = ~isfield(params.settings, 'blanks') || params.settings.blanks; % on by default
-    generate_report_template(report, fullfile(params.outdir, 'report'), blanks);
+    generate_report_template(report, params); 
 
 end
 

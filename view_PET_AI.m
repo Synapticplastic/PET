@@ -28,6 +28,7 @@ function view_PET_AI(params)
     max_Z = max(Z_data(~isnan(Z_data)));
 
     % Show orthogonal views interactively
+    close all
     spm_orthviews('Reset');
     spm_check_registration(T1);
 

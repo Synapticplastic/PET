@@ -75,13 +75,15 @@ function params = Step2(params)
 
     % Use SPM's Check Registration function to compare images
     if ~isfield(params.settings, 'viz') || params.settings.viz
-        disp('Opening Check Reg for T1, PET, and FLAIR...');                
+        disp('Opening Check Reg for T1, PET, and FLAIR...'); 
+        close all
         spm_check_registration(params.resliced.T1, params.resliced.PET, params.resliced.FLAIR);
-        spm_orthviews('Caption', 1, 'Check registration quality between T1, PET, and FLAIR');
+        spm_orthviews('Caption', 1, sprintf('Check registration quality between\nT1, PET, and FLAIR'));
         spm_orthviews('Redraw');
         disp('Viewer is open. Press any key in the command window to continue.');        
         pause; % Waits for any key press in the command window            
         disp('Coregistration and visual check completed successfully.');
+        close all
     else
         disp('Coregistration completed successfully.');
     end

@@ -8,15 +8,7 @@ function params = asymmetry_index_wrapper(inputs_file)
     % Parse inputs
     fid = fopen(inputs_file, 'r'); inputs = fscanf(fid, '%c'); fclose(fid);        
     params.settings = jsondecode(strrep(inputs, '\', '/'));
-
-    % Check that all files exist
-    img_types = {'T1', 'PET', 'FLAIR'};
-    for i = 1:3
-        if ~exist(params.settings.(img_types{i}), 'file')
-            error(['Source image not found: ', params.settings.(img_types{i})]);
-        end
-    end
-
+    
     % Prepare output directory
     params.settings.output_dir = strtrim(params.settings.output_dir);
     if strcmp(params.settings.output_dir(end), filesep)

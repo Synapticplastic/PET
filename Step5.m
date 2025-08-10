@@ -364,7 +364,7 @@ function generate_report_template(report, params)
         first_blank = ''; last_blank = '';
     end
 
-    date = sprintf('<b>Date:</b> %s', datetime('today', 'Format', 'MMMM d, yyyy'));
+    today = sprintf('<b>Date:</b> %s', datetime('today', 'Format', 'MMMM d, yyyy'));    
 
     if ~isfield(params.settings, 'cluster_size')
         cluster_size = .1; % default
@@ -378,15 +378,44 @@ function generate_report_template(report, params)
         min_thr = params.settings.thr; 
     end
 
+    scan_dates = struct;
+    fn = fieldnames(params.meta);
+    for i = 1:3
+        if isfield(params.meta.(fn{i}), 'StudyDate')
+            scan_dates.(fn{i}) = sprintf('%s', datetime(params.meta.(fn{i}).StudyDate, 'Format', 'MMMM d, yyyy'));
+        else
+            scan_dates.(fn{i}) = '';
+        end
+    end
+
+    if ~isempty(scan_dates.T1) && ~isempty(scan_dates.FLAIR) && strcmp(scan_dates.T1, scan_dates.FLAIR)
+        MRI_date = sprintf('3D T1-weighted and 3D FLAIR brain MRI sequences (%s)', scan_dates.T1);
+    elseif ~isempty(scan_dates.T1) && ~isempty(scan_dates.FLAIR)
+        MRI_date = sprintf('3D T1-weighted sequence (%s) and 3D FLAIR brain MRI sequence (%s)', scan_dates.T1, scan_dates.FLAIR);
+    elseif ~isempty(scan_dates.T1)
+        MRI_date = sprintf('3D T1-weighted sequence (%s) and 3D FLAIR brain MRI sequence', scan_dates.T1);
+    elseif ~isempty(scan_dates.FLAIR)
+        MRI_date = sprinf('3D T1-weighted sequence and 3D FLAIR brain MRI sequence (%s)', scan_dates.FLAIR);
+    else
+        MRI_date = '3D T1-weighted and 3D FLAIR brain MRI sequences';
+    end
+
+    if ~isempty(scan_dates.PET)
+        PET_date = ['(' scan_dates.PET ') '];
+    else
+        PET_date = '';
+    end
+    
     technique = sprintf([ ...
-        '<b>Technique:</b> High-resolution 3D T1-weighted and 3D FLAIR ' ...
-        'brain MRI sequences were co-registered with interictal FDG-PET ' ...
-        'for metabolic asymmetry analysis. PASCOM software* generated a ' ...
-        'hypometabolism asymmetry heatmap overlaid on the T1-weighted image, ' ...
-        'with higher Z-scores indicating greater relative hypoperfusion. ' ...
-        'Z-scores were thresholded at %.02f, and clusters with volume ' ...
+        '<b>Technique:</b> High-resolution %s were co-registered with ' ...
+        'interictal FDG-PET %sfor metabolic asymmetry analysis. ' ...
+        'PASCOM software* generated a hypometabolism asymmetry heatmap ' ...
+        'overlaid on the T1-weighted image, with higher Z-scores ' ...
+        'indicating greater relative hypoperfusion. Z-scores were ' ...
+        'thresholded at %.02f, and clusters with volume ' ...
         'below %.02f cc were omitted from the report.<br><br>' ...
-        '<u>Note: left is left on PASCOM output.</u>'], min_thr, cluster_size);
+        '<u>Note: left is left on PASCOM output.</u>'], ...
+        MRI_date, PET_date, min_thr, cluster_size);
 
     reference = sprintf([ ...
         '* Custom script by Anton Fomenko: <a href="https://github.com/Synapticplastic/PET">' ...
@@ -401,7 +430,7 @@ function generate_report_template(report, params)
         '<p style="font-family: Aptos; font-size: 12pt; color: #000000">%s</p>' ...
         '<p style="font-family: Aptos; font-size: 10pt; color: #000000">%s</p>' ...
         '<p style="font-family: Aptos; font-size: 14pt; color: #0f4761">Findings:</p>' ], ...
-        ipw + 25, first_blank, date, technique, reference);
+        ipw + 25, first_blank, today, technique, reference);
 
     % commence per-cluster reporting
     for r_idx = 1:length(report)
@@ -469,9 +498,9 @@ function generate_report(params)
     % prepare clustering settings
     conn = 26; % use 26-connectivity for clustering - hard-code for noow
     if ~isfield(params.settings, 'cluster_size') % minimum cluster size in cc
-        min_cluster_size = .1; 
+        cluster_size = .1; 
     else
-        min_cluster_size = params.settings.cluster_size;
+        cluster_size = params.settings.cluster_size;
     end
 
     % prepare data
@@ -496,10 +525,10 @@ function generate_report(params)
         dartel_template = {params.dartel_template};
     end
 
-    % work out min_cluster_size in voxels
-    voxel_size = sqrt(sum(V_Z.mat(1:3, 1:3) .^ 2)); % Size along each axis (X, Y, Z)
-    voxel_volume = prod(voxel_size);                % Voxel volume in mm³
-    voxel_cluster_size = min_cluster_size / voxel_volume;
+    % work out cluster_size in voxels
+    voxel_size = sqrt(sum(V_Z.mat(1:3, 1:3) .^ 2));     % Size along each axis (X, Y, Z)
+    voxel_volume = prod(voxel_size) / 1e3;              % Voxel volume in cc
+    voxel_cluster_size = cluster_size / voxel_volume;   % Minimum number of voxels needed
 
     % perform clustering    
     mask = (Z_data - min_thr) > 0;
@@ -571,7 +600,7 @@ function generate_report(params)
             % Also include the region with peak Z
             [~, max_Z] = max(TSCV(:));            
             focus_label = atlas_vol(max_Z);
-            if any(focus_label == exclude_labels)
+            if any(focus_label == exclude_labels) || ~focus_label
                 ijk = find_nearest_valid_peak(max_Z, ~ismember(atlas_vol .* (TSCV > 0), [0 exclude_labels]));
                 focus_idx = sub2ind(size(atlas_vol), ijk(1), ijk(2), ijk(3));
                 focus_label = atlas_vol(sub2ind(size(atlas_vol), focus_idx));

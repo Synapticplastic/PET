@@ -1,4 +1,4 @@
-function view_PET_AI(params)
+function view_PET_asymmetry(params)
 
     % Initialize
     spm('defaults', 'fmri');

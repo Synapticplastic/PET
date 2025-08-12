@@ -13,10 +13,19 @@ function params = Step4(params)
     % Generate grey (rc1) and white (rc2) matter maps
     matlabbatch = cell(2, 1);
     for i = 1:2 % coregistered, then coregistered flipped
-        matlabbatch{i}.spm.spatial.preproc.channel.vols = volpairs{i};
-        matlabbatch{i}.spm.spatial.preproc.channel.biasreg = 0.001;
-        matlabbatch{i}.spm.spatial.preproc.channel.biasfwhm = 60;
-        matlabbatch{i}.spm.spatial.preproc.channel.write = [0 0];
+
+        % Channel 1 (T1)
+        matlabbatch{i}.spm.spatial.preproc.channel(1).vols = {volpairs{i}{1}};
+        matlabbatch{i}.spm.spatial.preproc.channel(1).biasreg = 0.001;
+        matlabbatch{i}.spm.spatial.preproc.channel(1).biasfwhm = 60;
+        matlabbatch{i}.spm.spatial.preproc.channel(1).write = [1 1];
+    
+        % Channel 2 (FLAIR)
+        matlabbatch{i}.spm.spatial.preproc.channel(2).vols = {volpairs{i}{2}};
+        matlabbatch{i}.spm.spatial.preproc.channel(2).biasreg = 0.001;
+        matlabbatch{i}.spm.spatial.preproc.channel(2).biasfwhm = 60;
+        matlabbatch{i}.spm.spatial.preproc.channel(2).write = [0 0];
+
         matlabbatch{i}.spm.spatial.preproc.tissue(1).tpm = {[TPM ',1']};
         matlabbatch{i}.spm.spatial.preproc.tissue(1).ngaus = 1;
         matlabbatch{i}.spm.spatial.preproc.tissue(1).native = [1 1];
@@ -97,11 +106,7 @@ function params = Step4(params)
     params.flowfields.original = fullfile(params.outdir, ['u_rc1' nnT1 '_Template.nii']); % flowfield for original T1
     params.flowfields.flipped = fullfile(params.outdir, ['u_rc1' nnflipT1 '_Template.nii']); % flowfield for flipped T1
     params.c1T1 = fullfile(params.outdir, ['c1' nnT1 '.nii']); % grey matter map in the original T1 image's space
-    
-    fnames = {dir(params.outdir).name};
-    template_names = cellfun(@(s) ~isempty(regexp(s, '^Template_(\d+)\.nii$', 'once')), fnames);
-    template_ids = cellfun(@(s) regexp(s, '^Template_(\d+)\.nii$', 'tokens'), fnames(template_names), 'un', 0);
-    template_max = max(cellfun(@(t) str2double(t{1}{1}), template_ids));
-    params.dartel_template = fullfile(params.outdir, ['Template_' num2str(template_max) '.nii']);
+    t_last = length(matlabbatch{1}.spm.tools.dartel.warp.settings.param);
+    params.dartel_template = fullfile(params.outdir, sprintf('Template_%d.nii', t_last));
 
 end

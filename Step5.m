@@ -96,7 +96,7 @@ function params = Step5(params)
 
     % Show outputs
     disp('Review the final results...');
-    view_PET_AI(params);
+    view_PET_asymmetry(params);
 
 end
 
@@ -413,7 +413,7 @@ function generate_report_template(report, params)
         'overlaid on the T1-weighted image, with higher Z-scores ' ...
         'indicating greater relative hypoperfusion. Z-scores were ' ...
         'thresholded at %.02f, and clusters with volume ' ...
-        'below %.02f cc were omitted from the report.<br><br>' ...
+        'below %.02f ml were omitted from the report.<br><br>' ...
         '<u>Note: left is left on PASCOM output.</u>'], ...
         MRI_date, PET_date, min_thr, cluster_size);
 
@@ -446,7 +446,7 @@ function generate_report_template(report, params)
 
         % cluster report
         fprintf(fid, '<ul style="font-family: Aptos; font-size: 12pt">');
-        fprintf(fid, '<li><b>Volume:</b> %.2f cc</li>', report(r_idx).volume);
+        fprintf(fid, '<li><b>Volume:</b> %.2f ml</li>', report(r_idx).volume);
         fprintf(fid, '<li><b>Z-score:</b> highest: %.2f, mean: %.2f, lowest: %.2f</li>', report(r_idx).max, report(r_idx).mean, report(r_idx).min);        
 
         if isfield(report(r_idx), 'regions') && isfield(report(r_idx), 'peak')
@@ -497,7 +497,7 @@ function generate_report(params)
 
     % prepare clustering settings
     conn = 26; % use 26-connectivity for clustering - hard-code for noow
-    if ~isfield(params.settings, 'cluster_size') % minimum cluster size in cc
+    if ~isfield(params.settings, 'cluster_size') % minimum cluster size in ml
         cluster_size = .1; 
     else
         cluster_size = params.settings.cluster_size;
@@ -527,7 +527,7 @@ function generate_report(params)
 
     % work out cluster_size in voxels
     voxel_size = sqrt(sum(V_Z.mat(1:3, 1:3) .^ 2));     % Size along each axis (X, Y, Z)
-    voxel_volume = prod(voxel_size) / 1e3;              % Voxel volume in cc
+    voxel_volume = prod(voxel_size) / 1e3;              % Voxel volume in ml
     voxel_cluster_size = cluster_size / voxel_volume;   % Minimum number of voxels needed
 
     % perform clustering    

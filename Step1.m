@@ -154,8 +154,19 @@ function dicoms = search_for_dicoms(path)
                 dicoms = cat(2, dicoms, search_for_dicoms(path));
             end
         else
-            if endsWith(contents(i).name, '.dcm')
-                dicoms{end + 1} = fullfile(contents(i).folder, contents(i).name);
+            if ~endsWith(lower(contents(i).name), {'.nii', '.nii.gz', 'dicomdir'})
+                fpath = fullfile(contents(i).folder, contents(i).name);
+                fid = fopen(fpath, 'r');
+                if fid == -1
+                    continue
+                end
+                cleaner = onCleanup(@() fclose(fid));
+                header = fread(fid, 132, 'uint8=>uint8'); % Read first 132 bytes
+                if numel(header) < 132
+                    continue
+                elseif all(header(129:132)' == uint8('DICM')) % Check bytes 129:132 for 'DICM'
+                    dicoms{end + 1} = fpath;
+                end
             end
         end
     end

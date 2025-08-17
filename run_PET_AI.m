@@ -1,4 +1,4 @@
-function params = PET_asymmetry(inputs_file)
+function params = run_PET_AI(inputs_file)
     
     % Ensure SPM12 is in MATLAB path
     if isempty(which('spm'))
@@ -22,7 +22,7 @@ function params = PET_asymmetry(inputs_file)
     % Execute the workflow
     for i = 1:5
         save([params.outdir filesep 'params_step_' num2str(i) '.mat'], 'params');
-        params = feval(['Step' num2str(i)], params);
+        params = feval(['PET_AI_Step' num2str(i)], params);
     end
 
 end

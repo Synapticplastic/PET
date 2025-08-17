@@ -25,7 +25,7 @@ Epilepsy Neurosurgery Fellow, University of Toronto
 
 ### GUIDELINE FOR USE:
 
-1. Download the repository. Ensure MATLAB and SPM12 are installed.
+1. Download the repository. Ensure MATLAB and SPM12 are installed, and SPM and the repository are on your MATLAB path.
 
 2. Export PET, T1 MRI, FLAIR MRI scans of patients. Ideally the scans are done within the same year, and are thinly sliced. 
 
@@ -33,12 +33,12 @@ Epilepsy Neurosurgery Fellow, University of Toronto
 
 4. Create an inputs JSON as demonstrated [below](#creating-inputs-json) (an example is also available in this repository). **This file is mandatory.**
 
-5. Run `PET_asymmetry('string\to\inputs.json')`.
+5. Run `run_PET_AI('string\to\inputs.json')`.
 
 6. If an individual step needs to be re-run (e.g., experimenting with Z-score and/or cluster volume thresholds):
     - The output folder will contain `params_step_*.mat` files with inputs for every step. 
     - Load this file, optionally change the contents of the thus loaded `params` structure (most likely in `params.settings`).
-    - Type `Step5(params)` (replace 5 as needed).
+    - Type `PET_AI_Step5(params)` (replace 5 as needed).
 
 7. If registration continues to fail, consider cropping the images to contain brain only if excessive neck is present (may help registration), followed by manual alignment of the images using external software (FLAIR and PET to T1 - do not modify T1 itself!).
 
@@ -86,11 +86,11 @@ In addition, the following are optional (contain within the same curly brackets)
 
 - `centre_of_mass` lets registration initialise from the centres of mass of both images. This helps when e.g. PET is wildly out of alignment, and so it is strongly recommended by default (unless all images are pre-registered). Valid values: 0&nbsp;/&nbsp;1.
 - `thr` is the minimum Z-score for the PET asymmetry to be demonstrated on outputs. Default is likely too conservative, consider setting to 3.5-4.0. Valid values: any non-negative number.
-- `cluster_size`: threshold for cluster size in ml. Clusters smaller that this threshold will get discarded, unless they contain Z peak which will always be preserved. Default is likely too conservative, consider setting to 0.5-1.0. Valid values: any non-negative number.
+- `cluster_size`: threshold for cluster size in ml. Clusters smaller that this threshold will get discarded, unless they contain Z peak which will always be preserved. Default is likely too conservative, consider setting to 0.5-1.0. Valid values: any non-negative number; 0 will disable this thresholding.
 - `report`: produce a report which will contain per-cluster images and data. Valid values: 0&nbsp;/&nbsp;1.
 - `blanks`: given `report` is on, will append empty fields that can be populated with clinical data. Valid values: 0&nbsp;/&nbsp;1.
 - `regions`: given `report` is on, will attempt an automated anatomical description of every cluster. Experimental feature, always double-check! Valid values: 0&nbsp;/&nbsp;1.
-- `burnin`: whether output burn-in image is produced. This will modify the original T1-weighted image such that Z>3 clusters are shown as white, Z>4 clusters are shown as black, Z>5 clusters are shown as grey. The file is saved as `burnin.nii`. Valid values: 0&nbsp;/&nbsp;1.
+- `burnin`: whether output burn-in image is produced. This will modify the original T1-weighted image such that Z>3 clusters are shown as white, Z>4 clusters are shown as black, Z>5 clusters are shown as grey. The file is saved as `burnin.nii`. Currently no cluster size-based filtering is used. Valid values: 0&nbsp;/&nbsp;1.
 - `viz` provides interactive quality control of the relevant steps - it is recommended to inspect the interim and final outputs to ensure the correctness of results. Valid values: 0&nbsp;/&nbsp;1.
 
 Any of these optional flags can be omitted, in which case they will default to the values shown above.
@@ -100,10 +100,10 @@ All of these flags are present in `example_inputs.json` provided with the code; 
 
 ![image](https://github.com/user-attachments/assets/80220561-9b7b-4101-8085-ee257329989a)
 
-Results are automatically shown at the end, but to view them separately, `view_PET_asymmetry.m` should be used:
+Results are automatically shown at the end, but to view them separately, `PET_AI_viewer.m` should be used:
 
-1. One option is to type `view_PET_asymmetry(params)` where `params` is loaded in advance from the output folder's `params_step_5.mat` file. 
-2. The other option is to copy the viewer file into the output folder, navigate there in Matlab, and type `view_PET_asymmetry()`.
+1. One option is to type `PET_AI_viewer(params)` where `params` is loaded in advance from the output folder's `params_step_5.mat` file. 
+2. The other option is to copy the viewer file into the output folder, navigate there in Matlab, and type `PET_AI_viewer()`.
 
 **NOTE! The viewer will demonstrate results in "anatomical" orientation (right is right, left is left). The cluster image files (`cluster_1.nii` etc), however, will stay aligned with the original T1w image file.**
 

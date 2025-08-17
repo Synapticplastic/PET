@@ -18,7 +18,7 @@ function params = PET_AI_Step3(params)
         U(:, 3) = -U(:, 3);
         R = U * V';
     end
-    T = R * A \ t1_world2mni(1:3, 4); 
+    T = R' * t1_world2mni(1:3, 4);
     t1_world2mni_rigid = eye(4);
     t1_world2mni_rigid(1:3, 1:3) = R; % rigid rotation
     t1_world2mni_rigid(1:3, 4)   = T; % rigid translation

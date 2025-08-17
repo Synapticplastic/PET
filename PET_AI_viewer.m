@@ -1,4 +1,4 @@
-function view_PET_asymmetry(params)
+function PET_AI_viewer(params)
 
     % Initialize
     spm('defaults', 'fmri');
@@ -7,7 +7,7 @@ function view_PET_asymmetry(params)
 
     % Get data
     if nargin % params provided
-        T1 = params.original.T1;
+        T1 = params.MNI_aligned.T1;
         Z = fullfile(params.outdir, 'Z_AI_image.nii');
         if ~isfield(params.settings, 'thr')
             min_Z = def_min_Z;
@@ -16,7 +16,7 @@ function view_PET_asymmetry(params)
         end
     else % params not provided = expect the script is in the outputs dir
         outdir = fileparts(mfilename('fullpath'));
-        T1 = fullfile(outdir, 'original_T1.nii');
+        T1 = fullfile(outdir, 'MNI_aligned_T1.nii');
         Z = fullfile(outdir, 'Z_AI_image.nii');
         min_Z = def_min_Z;
     end

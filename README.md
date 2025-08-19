@@ -88,13 +88,13 @@ In addition, the following are optional (contain within the same curly brackets)
 ```
 
 - `centre_of_mass` lets registration initialise from the centres of mass of both images. This helps when e.g. PET is wildly out of alignment, and so it is strongly recommended by default (unless all images are pre-registered). Valid values: 0&nbsp;/&nbsp;1.
-- `thr` is the minimum Z-score for the PET asymmetry to be demonstrated on outputs. Default may sometimes be too conservative, sometimes setting to 3.5-4.0 can yield less noisy results (but start with a lower threshold first to avoid discarding useful data). Valid values: any non-negative number.
-- `cluster_size`: threshold for cluster size in ml. Clusters smaller that this threshold will get discarded, unless they contain Z peak which will always be preserved. Default is likely too conservative, consider setting to 0.5-1.0. Valid values: any non-negative number; 0 will disable this thresholding.
+- `viz` provides interactive quality control of the relevant steps - it is recommended to inspect the interim and final outputs to ensure the correctness of results. Valid values: 0&nbsp;/&nbsp;1.
+- `thr` is the minimum Z-score for the PET asymmetry to be demonstrated on outputs. Default may sometimes be too conservative; setting to 3.5&nbsp;&#8209;&nbsp;4.0 can yield less noisy results (but start with a lower threshold first to avoid discarding useful data). Valid values: any non-negative number.
+- `cluster_size`: threshold for cluster size in ml. Clusters smaller that this threshold will get discarded, unless they contain Z peak which will always be preserved. Default is likely too conservative, consider setting to 0.5&nbsp;&#8209;&nbsp;1.0. Valid values: any non-negative number; 0 will disable this thresholding.
 - `report`: produce a report which will contain per-cluster images and data. Valid values: 0&nbsp;/&nbsp;1.
 - `blanks`: given `report` is on, will append empty fields that can be populated with clinical data. Valid values: 0&nbsp;/&nbsp;1.
 - `regions`: given `report` is on, will attempt an automated anatomical description of every cluster. Experimental feature, always double-check! Valid values: 0&nbsp;/&nbsp;1.
-- `burnin`: whether output burn-in image is produced. This will modify the original T1-weighted image such that Z>3 clusters are shown as white, Z>4 clusters are shown as black, Z>5 clusters are shown as grey. The file is saved as `burnin.nii`. Currently no cluster size-based filtering is used. Valid values: 0&nbsp;/&nbsp;1.
-- `viz` provides interactive quality control of the relevant steps - it is recommended to inspect the interim and final outputs to ensure the correctness of results. Valid values: 0&nbsp;/&nbsp;1.
+- `burnin`: whether output burn-in image is produced. For a Z-score threshold value of t (`thr` above), this will modify the original T1-weighted image such clusters with Z-score between t and t&nbsp;+&nbsp;1 are shown as white, between t&nbsp;+&nbsp;1 and t&nbsp;+&nbsp;2 are black, t&nbsp;&#8805;&nbsp;2 are grey. The file is saved as `burnin.nii`. Currently no cluster size-based filtering is used. Valid values: 0&nbsp;/&nbsp;1.
 
 Any of these optional flags can be omitted, in which case they will default to the values shown above.
 All of these flags are present in `example_inputs.json` provided with the code; this can be copied for each set of data and modified accordingly.

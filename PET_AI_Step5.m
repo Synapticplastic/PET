@@ -433,7 +433,7 @@ function generate_report_template(report, params)
     scan_dates = struct;
     fn = fieldnames(params.meta);
     for i = 1:3
-        if isfield(params.meta.(fn{i}), 'StudyDate')
+        if isfield(params.meta.(fn{i}), 'StudyDate') && ~isempty(params.meta.(fn{i}).StudyDate)
             scan_dates.(fn{i}) = sprintf('%s', datetime(params.meta.(fn{i}).StudyDate, 'Format', 'MMMM d, yyyy'));
         else
             scan_dates.(fn{i}) = '';
@@ -481,8 +481,9 @@ function generate_report_template(report, params)
         '<p style="font-family: Aptos; font-size: 12pt; color: #000000">%s</p>' ...
         '<p style="font-family: Aptos; font-size: 12pt; color: #000000">%s</p>' ...
         '<p style="font-family: Aptos; font-size: 10pt; color: #000000">%s</p>' ...
+        '%s</tr></td></table><table width="%d"><tr><td>' ...
         '<p style="font-family: Aptos; font-size: 14pt; color: #0f4761">Findings:</p>' ], ...
-        ipw + 25, first_blank, today, technique, reference);
+        ipw + 25, first_blank, today, technique, reference, last_blank, ipw + 25);
 
     % commence per-cluster reporting
     if isempty(report) || isempty(fieldnames(report))
@@ -536,7 +537,7 @@ function generate_report_template(report, params)
     end
 
     % wrap up and open
-    fprintf(fid, '%s</td></tr></table></body>\n</html>', last_blank);
+    fprintf(fid, '</td></tr></table></body></html>');
     fclose(fid);
     web(html_path, '-browser');
 

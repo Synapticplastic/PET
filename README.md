@@ -85,7 +85,7 @@ In addition, the following are optional (contain within the same curly brackets)
 ```
 
 - `centre_of_mass` lets registration initialise from the centres of mass of both images. This helps when e.g. PET is wildly out of alignment, and so it is strongly recommended by default (unless all images are pre-registered). Valid values: 0&nbsp;/&nbsp;1.
-- `thr` is the minimum Z-score for the PET asymmetry to be demonstrated on outputs. Default is likely too conservative, consider setting to 3.5-4.0. Valid values: any non-negative number.
+- `thr` is the minimum Z-score for the PET asymmetry to be demonstrated on outputs. Default may sometimes be too conservative, sometimes setting to 3.5-4.0 can yield less noisy results (but start with a lower threshold first to avoid discarding useful data). Valid values: any non-negative number.
 - `cluster_size`: threshold for cluster size in ml. Clusters smaller that this threshold will get discarded, unless they contain Z peak which will always be preserved. Default is likely too conservative, consider setting to 0.5-1.0. Valid values: any non-negative number; 0 will disable this thresholding.
 - `report`: produce a report which will contain per-cluster images and data. Valid values: 0&nbsp;/&nbsp;1.
 - `blanks`: given `report` is on, will append empty fields that can be populated with clinical data. Valid values: 0&nbsp;/&nbsp;1.
@@ -105,7 +105,7 @@ Results are automatically shown at the end, but to view them separately, `PET_AI
 1. One option is to type `PET_AI_viewer(params)` where `params` is loaded in advance from the output folder's `params_step_5.mat` file. 
 2. The other option is to copy the viewer file into the output folder, navigate there in Matlab, and type `PET_AI_viewer()`.
 
-**NOTE! The viewer will demonstrate results in "anatomical" orientation (right is right, left is left). The cluster image files (`cluster_1.nii` etc), however, will stay aligned with the original T1w image file.**
+**NOTE! The viewer will demonstrate results in "anatomical" orientation (right is right, left is left). The actual image files (e.g., `MNI_cluster_1.nii` etc) will preserve the original T1w laterality but not orientation (i.e., they will be rotated). Only the burn-in output ([below](#exporting-results-to-dicom)) remains aligned with the original T1w image file.**
 
 ### EDITING THE REPORT
 
@@ -113,11 +113,15 @@ Report is produced as HTML and image files, stored in the `report` folder of the
 
 ### EXPORTING RESULTS TO DICOM:
 
-Open output in MRIcron to ensure burned-in is adequate of new nifti. 
+Preview `burnin.nii` (e.g., in MRIcron) to ensure it is adequate. If this was to be used in BrainLab / NeuroMate, it must be exported as DICOM:
 
-1. To use in BrainLab/NeuroMate planning station must EXPORT `burnin.nii` AS DICOM 
-2. Use 3Dslicer --> Module> DICOM  --> EXPORT as DICOM series --> Populate tag fields.
-3. You should now have a folder of DICOMs ready for use. Can put this on USB stick and use on planning software (Brainlab, Stealth, Neuromate). **It must be noted that any such use is purely experimental.**
+1. Open 3D Slicer and launch Module > DICOM.
+2. Under "Loaded Data" panel, right-click and select "Create new subject" (optionally, rename).
+3. Right-click on the new subject and select "Create child study" (optionally, rename).
+4. Drag `burnin.nii` from your file explorer to the panel and move it to sit under the new study.
+5. Right-click on burnin and select "Export to DICOM...".
+6. In the "DICOM Export" window that appears, relevant tags need to be populated (e.g., PatientBirthDate, PatientID, PatientName, StudyDate) and export type selected as "Scalar Volume".
+7. You should now have a folder of DICOMs ready for use. Can put this on USB stick and use on planning software (Brainlab, Stealth, Neuromate). **It must be noted that any such use is purely experimental.**
 
 
 > Reference: Aslam S, Damodaran N, Rajeshkannan R, Sarma M, Gopinath S, Pillai A. Asymmetry index in anatomically symmetrized FDG-PET for improved epileptogenic focus detection in pharmacoresistant epilepsy. J Neurosurg. 2022 Aug 5;138(3):828-836. doi: 10.3171/2022.6.JNS22717. PMID: 35932262

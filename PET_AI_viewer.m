@@ -3,34 +3,33 @@ function PET_AI_viewer(params)
     % Initialize
     spm('defaults', 'fmri');
     spm_jobman('initcfg');
-    def_min_Z = 3;
 
     % Get data
     if nargin % params provided
-        T1 = params.MNI_aligned.T1;
-        Z = fullfile(params.outdir, 'Z_AI_image.nii');
-        if ~isfield(params.settings, 'thr')
-            min_Z = def_min_Z;
-        else
-            min_Z = params.settings.thr;
-        end
+        T1_path = params.MNI_aligned.T1;
+        Z_path = params.Z_thresholded;
     else % params not provided = expect the script is in the outputs dir
         outdir = fileparts(mfilename('fullpath'));
-        T1 = fullfile(outdir, 'MNI_aligned_T1.nii');
-        Z = fullfile(outdir, 'Z_AI_image.nii');
-        min_Z = def_min_Z;
-    end
-    if ~exist(T1, 'file') || ~exist(Z, 'file')
+        T1_path = fullfile(outdir, 'MNI_aligned_T1.nii');
+        Z_path = fullfile(outdir, 'Z_thresholded.nii');
+    end    
+    if ~exist(T1_path, 'file') || ~exist(Z_path, 'file')
         error('Unable to locate required files')
     end    
-    V_Z = spm_vol(Z);
+    V_Z = spm_vol(Z_path);
     Z_data = spm_read_vols(V_Z);
+
     max_Z = max(Z_data(~isnan(Z_data)));
+    if isfield(params.settings, 'thr')
+        min_Z = params.settings.thr;
+    else
+        min_Z = 3;
+    end
 
     % Show orthogonal views interactively
     close all
     spm_orthviews('Reset');
-    spm_check_registration(T1);
+    spm_check_registration(T1_path);
 
     % Fiddle with orthviews' internal data to get masking working
 

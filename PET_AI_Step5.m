@@ -85,7 +85,10 @@ function params = PET_AI_Step5(params)
     V_Z.fname = outputs.Z_AI_image; % Output filename
     
     % Write the Z-score image to disk
-    spm_write_vol(V_Z, Z_data);    
+    spm_write_vol(V_Z, Z_data);
+
+    % Threshold and cluster as needed
+    params = threshold_cluster(params);
     
     % Generate report - this also saves niftis with individual clusters
     generate_report(params);
@@ -96,6 +99,56 @@ function params = PET_AI_Step5(params)
     % Show outputs
     disp('Review the final results...');
     PET_AI_viewer(params);
+
+end
+
+function voxel_volume = compute_voxel_volume(header)
+
+    voxel_size = sqrt(sum(header.mat(1:3, 1:3) .^ 2));  % Size along each axis (X, Y, Z)
+    voxel_volume = prod(voxel_size) / 1e3;              % Voxel volume in ml
+
+end
+
+function params = threshold_cluster(params)
+
+   % prepare thresholds    
+    if ~isfield(params.settings, 'thr')
+        min_thr = 3;
+    else
+        min_thr = params.settings.thr;
+    end
+
+    % prepare clustering settings
+    conn = 26; % use 26-connectivity for clustering - hard-code for now
+    if ~isfield(params.settings, 'cluster_size') % minimum cluster size in ml
+        cluster_size = .1; 
+    else
+        cluster_size = params.settings.cluster_size;
+    end
+
+    % prepare data
+    V_Z = spm_vol(fullfile(params.outdir, 'Z_AI_image.nii'));
+    Z_data = spm_read_vols(V_Z);
+
+    % work out cluster_size in voxels
+    voxel_volume = compute_voxel_volume(V_Z);
+    voxel_cluster_size = cluster_size / voxel_volume;   % Minimum number of voxels needed
+    
+    % perform clustering    
+    mask = (Z_data - min_thr) > 0;
+    mask(isnan(mask)) = 0;
+    [labels, nl] = bwlabeln(mask, conn);
+    peak_id = labels(Z_data == max(Z_data(:)));
+
+    % remove unwanted clusters
+    large_clusters = arrayfun(@(l_idx) sum(labels(:) == l_idx) >= voxel_cluster_size, 1:nl);
+    peak_cluster = (1:nl) == peak_id;    
+    Z_data(~ismember(labels, find(large_clusters | peak_cluster))) = 0;
+
+    % save
+    params.Z_thresholded = strrep(V_Z.fname, 'image', 'image_thresholded');
+    V_Z.fname = params.Z_thresholded;
+    spm_write_vol(V_Z, Z_data);
 
 end
 
@@ -494,25 +547,11 @@ function generate_report(params)
     if isfield(params.settings, 'report') && ~params.settings.report % on by default
         return
     end
-
-    % prepare thresholds    
-    if ~isfield(params.settings, 'thr')
-        min_thr = 3;
-    else
-        min_thr = params.settings.thr;
-    end
-
-    % prepare clustering settings
-    conn = 26; % use 26-connectivity for clustering - hard-code for noow
-    if ~isfield(params.settings, 'cluster_size') % minimum cluster size in ml
-        cluster_size = .1; 
-    else
-        cluster_size = params.settings.cluster_size;
-    end
-
+    
     % prepare data
-    V_Z = spm_vol(fullfile(params.outdir, 'Z_AI_image.nii'));
+    V_Z = spm_vol(params.Z_thresholded);
     Z_data = spm_read_vols(V_Z);
+    voxel_volume = compute_voxel_volume(V_Z);
 
     % set up region reporting
     report_regions = isfield(params.settings, 'regions') && params.settings.regions; % off by default
@@ -531,25 +570,10 @@ function generate_report(params)
         flowfield = {params.flowfields.original};
         dartel_template = {params.dartel_template};
     end
-
-    % work out cluster_size in voxels
-    voxel_size = sqrt(sum(V_Z.mat(1:3, 1:3) .^ 2));     % Size along each axis (X, Y, Z)
-    voxel_volume = prod(voxel_size) / 1e3;              % Voxel volume in ml
-    voxel_cluster_size = cluster_size / voxel_volume;   % Minimum number of voxels needed
-
-    % perform clustering    
-    mask = (Z_data - min_thr) > 0;
-    mask(isnan(mask)) = 0;
-    [labels, nl] = bwlabeln(mask, conn);
-    peak_id = labels(Z_data == max(Z_data(:)));
-
-    % remove unwanted clusters
-    large_clusters = arrayfun(@(l_idx) sum(labels(:) == l_idx) >= voxel_cluster_size, 1:nl);
-    peak_cluster = (1:nl) == peak_id;
-    invalid_cluster_idx = find(~large_clusters & ~peak_cluster);
-    labels(ismember(labels, invalid_cluster_idx)) = 0;
-
+    
     % map clusters based on size
+    conn = 26;
+    [labels, ~] = bwlabeln(Z_data > 0, conn);
     unique_labels = unique(labels(:))';
     label_sizes = arrayfun(@(l_idx) sum(labels(:) == l_idx), unique_labels);
     [~, cluster_sorting] = sort(label_sizes(unique_labels > 0), 'descend');
@@ -572,9 +596,9 @@ function generate_report(params)
         report(l_idx).volume = sum(cluster_mask(:)) * voxel_volume;
         report(l_idx).images = generate_report_images(params.MNI_aligned.T1, Z_data, cluster_mask);
 
-        % Produce t1-space image
+        % Produce MNI-space image
         AS_hdr = V_Z;
-        AS_hdr.fname = fullfile(params.outdir, ['cluster_' num2str(l_idx) '.nii']);
+        AS_hdr.fname = fullfile(params.outdir, ['MNI_cluster_' num2str(l_idx) '.nii']);
         spm_write_vol(AS_hdr, Z_data .* double(cluster_mask));
 
         if report_regions
@@ -591,7 +615,7 @@ function generate_report(params)
             spm_jobman('run', matlabbatch);
     
             % Read the volume and check which labels it contains
-            template_space_cluster_path = fullfile(params.outdir, ['wcluster_' num2str(l_idx) '.nii']);
+            template_space_cluster_path = fullfile(params.outdir, ['wMNI_cluster_' num2str(l_idx) '.nii']);
             TSCH = spm_vol(template_space_cluster_path);
             TSCV = spm_read_vols(TSCH);
             cluster_labels = atlas_vol(TSCV > 0);
@@ -628,10 +652,20 @@ function perform_burnin(params)
         return
     end
 
-    thresholds = [3, 4, 5]; % hard-code for now
+    if ~isfield(params.settings, 'thr')
+        min_thr = 3; % default
+    else
+        min_thr = params.settings.thr; 
+    end
 
-    if length(thresholds) > 3 % in case custom options allowed later
-        warning('Only the last three thresholds will be burned in')
+    % define burn-in thresholds
+    V_Z = spm_vol(params.Z_thresholded);
+    Z = spm_read_vols(V_Z);
+    thresholds = min_thr + (0:2);
+    thresholds(thresholds >= nanmax(Z(:))) = [];
+    if isempty(thresholds)
+        warning('Unable to write burn-in image (no above-threshold areas found)')
+        return
     end
 
     % prepare data
@@ -645,15 +679,14 @@ function perform_burnin(params)
     orig2mni = inv(t1_mni_hdr.mat) * params.MNI_rigid * burnin_hdr.mat;
     dim = burnin_hdr.dim;
     [x, y, z] = ndgrid(1:dim(1), 1:dim(2), 1:dim(3)); % original grid voxel coordinates
-    vox_orig = (orig2mni(1:3, 1:3) * [x(:) y(:) z(:)]' + orig2mni(1:3, 4))'; % original grid voxels coordinates in mni grid coordinate space
-    V_Z = spm_vol(fullfile(params.outdir, 'Z_AI_image.nii'));
+    vox_orig = (orig2mni(1:3, 1:3) * [x(:) y(:) z(:)]' + orig2mni(1:3, 4))'; % original grid voxels coordinates in mni grid coordinate space    
     interp_vals = spm_sample_vol(V_Z, vox_orig(:,1), vox_orig(:,2), vox_orig(:,3), 1); % Z_data values corresponding to the original grid
     Z_data_orig = reshape(interp_vals, dim);
 
     % burn in Z levels
     for t_idx = 1:length(thresholds)
         mask = Z_data_orig > thresholds(t_idx);
-        switch t_idx - (length(thresholds) - 3)
+        switch t_idx % - (length(thresholds) - 3)
             case 1
                 burnin_vol(mask) = nanmax(t1_mni_vol(:)); % white burn-in
             case 2

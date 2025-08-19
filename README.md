@@ -94,7 +94,7 @@ In addition, the following are optional (contain within the same curly brackets)
 - `report`: produce a report which will contain per-cluster images and data. Valid values: 0&nbsp;/&nbsp;1.
 - `blanks`: given `report` is on, will append empty fields that can be populated with clinical data. Valid values: 0&nbsp;/&nbsp;1.
 - `regions`: given `report` is on, will attempt an automated anatomical description of every cluster. Experimental feature, always double-check! Valid values: 0&nbsp;/&nbsp;1.
-- `burnin`: whether output burn-in image is produced. For a Z-score threshold value of t (`thr` above), this will modify the original T1-weighted image such clusters with Z-score between t and t&nbsp;+&nbsp;1 are shown as white, between t&nbsp;+&nbsp;1 and t&nbsp;+&nbsp;2 are black, t&nbsp;&#8805;&nbsp;2 are grey. The file is saved as `burnin.nii`. Currently no cluster size-based filtering is used. Valid values: 0&nbsp;/&nbsp;1.
+- `burnin`: whether output burn-in image is produced. For a Z-score threshold value of t (`thr` above), this will modify the original T1-weighted image such that clusters with Z-score between t and t&nbsp;+&nbsp;1 are shown as white, between t&nbsp;+&nbsp;1 and t&nbsp;+&nbsp;2 are black, and &#8805;&nbsp;t&nbsp;+&nbsp;2 are grey. The file is saved as `burnin.nii`. Valid values: 0&nbsp;/&nbsp;1.
 
 Any of these optional flags can be omitted, in which case they will default to the values shown above.
 All of these flags are present in `example_inputs.json` provided with the code; this can be copied for each set of data and modified accordingly.

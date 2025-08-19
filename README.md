@@ -8,6 +8,9 @@ Epilepsy Neurosurgery Fellow, University of Toronto
 Branch: Dmitri Šastin
 Epilepsy Neurosurgery Fellow, University of Toronto
 
+Acknowledgments:
+Thank you to Dr Lydia Falsitta for her contribution to the report structure.
+
 ### REQUIREMENTS:
 
 1. MATLAB v2017 or higher

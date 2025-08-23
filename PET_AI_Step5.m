@@ -43,7 +43,11 @@ function params = PET_AI_Step5(params)
     for i = 1:length(o)
         outputs.(o{i}) = fullfile(params.outdir, [o{i} '.nii']);
     end
-    outputs = renamefields(outputs, {['sww' nnflipPET], ['sww' nnPET]}, {'swwflipPET', 'swwPET'});
+    rename = {{['sww' nnflipPET], ['sww' nnPET]}, {'swwflipPET', 'swwPET'}};
+    for i = 1:2
+        outputs.(rename{2}{i}) = outputs.(rename{1}{i});
+        outputs = rmfield(outputs, rename{1}{i});
+    end
 
     % Smooth inputs
     sm_inputs{1} = ['ww' nnflipPET '_u_rc1' nnT1 '_Template.nii'];

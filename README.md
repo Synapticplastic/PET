@@ -36,7 +36,7 @@ Thank you to Dr Lydia Falsitta for her contribution to the report structure.
 
 4. Create an inputs JSON as demonstrated [below](#creating-inputs-json) (an example is also available in this repository). **This file is mandatory.**
 
-5. Run `run_PET_AI('string\to\inputs.json')`.
+5. Run `run_PET_AI('path\to\inputs.json')`.
 
 6. If an individual step needs to be re-run (e.g., experimenting with Z-score and/or cluster volume thresholds):
     - The output folder will contain `params_step_*.mat` files with inputs for every step. 

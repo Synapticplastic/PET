@@ -36,14 +36,16 @@ Thank you to Dr Lydia Falsitta for her contribution to the report structure.
 
 4. Create an inputs JSON as demonstrated [below](#creating-inputs-json) (an example is also available in this repository). **This file is mandatory.**
 
-5. Run `run_PET_AI('path\to\inputs.json')`.
+5. On Windows, Type in Matlab:  `run_PET_AI('path\to\inputs.json')`
+   On Mac, TYPE IN MATLAB command window the following:   run_PET_AI('/path/to/inputs.json')
 
-6. If an individual step needs to be re-run (e.g., experimenting with Z-score and/or cluster volume thresholds):
+
+7. If an individual step needs to be re-run (e.g., experimenting with Z-score and/or cluster volume thresholds):
     - The output folder will contain `params_step_*.mat` files with inputs for every step. 
     - Load this file, optionally change the contents of the thus loaded `params` structure (most likely in `params.settings`).
     - Type `PET_AI_Step5(params)` (replace 5 as needed).
 
-7. If registration continues to fail, consider cropping the images to contain brain only if excessive neck is present (may help registration), followed by manual alignment of the images using external software (FLAIR and PET to T1 - do not modify T1 itself!).
+8. If registration continues to fail, consider cropping the images to contain brain only if excessive neck is present (may help registration), followed by manual alignment of the images using external software (FLAIR and PET to T1 - do not modify T1 itself!).
 
 ### CREATING INPUTS JSON:
 

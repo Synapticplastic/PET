@@ -103,7 +103,7 @@ All of these flags are present in `example_inputs.json` provided with the code; 
 
 ### VIEWING RESULTS 
 
-![image](https://github.com/user-attachments/assets/80220561-9b7b-4101-8085-ee257329989a)
+<img width="732" height="465" alt="image" src="https://github.com/user-attachments/assets/6f35de99-104a-4608-a8fc-7ea3e7d2330f" />
 
 Results are automatically shown at the end, but to view them separately, `PET_AI_viewer.m` should be used:
 

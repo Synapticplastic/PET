@@ -1,0 +1,14 @@
+{
+  "PET": "path\to\PET\nifti\or\NIFTI_or_DCM_dir",
+  "T1": "path\to\T1\nifti\or\NIFTI_or_DCM_dir",
+  "FLAIR": "path\to\FLAIR\nifti\or\NIFTI_or_DCM_dir",
+  "output_dir": "path\to\output_dir",
+  "centre_of_mass": 1,
+  "thr": 3,
+  "cluster_size": .1,
+  "report": 1,
+  "blanks": 1,
+  "regions": 0, 
+  "burnin": 0,
+  "viz": 1
+}

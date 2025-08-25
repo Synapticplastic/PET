@@ -2,8 +2,8 @@
 Asymmetry Index pipeline for evaluation of epilepsy
 v2.0 (Feb 2025)
 
-Custom scripts by Anton Fomenko MD FRCSC
-Epilepsy Neurosurgery Fellow, University of Toronto
+Original scripts (v1.0) by Anton Fomenko MD FRCSC
+Epilepsy and Functional Neurosurgeon, University of Manitoba
 
 Branch: Dmitri Šastin
 Epilepsy Neurosurgery Fellow, University of Toronto

@@ -114,10 +114,10 @@ Results are automatically shown at the end, but to view them separately, `PET_AI
 
 ### NOTES ABOUT FALSE POSITIVES
 
-In some patients, a false positive hotspot is identified near the torcular region (confluence of sinuses). This was described in the original paper, and results from misclassification of tissue around the torcula. For now, post-hoc manual rejection of these artefactual results should be done. We are working on future versions of this code that will aim to eliminate this.
-
-From the original paper: https://doi-org.uml.idm.oclc.org/10.3171/2022.6.JNS22717
+1. In some patients, a false positive hotspot is identified near the torcular region (confluence of sinuses). This was described in the original paper, and results from misclassification of tissue around the torcula. For now, post-hoc manual rejection of these artefactual results should be done. We are working on future versions of this code that will aim to eliminate this. From the original paper: https://doi-org.uml.idm.oclc.org/10.3171/2022.6.JNS22717
 _"In most of our patients, the torcular herophili region as seen on T1-weighted MRI was frequently misclassified as gray matter during the segmentation step, as shown in Fig. 6A. DARTEL import files, when used to create a symmetrical template, retained structural asymmetry in the torcular herophili region. In turn, the AI images acquired higher values in the torcular region that were likely to be detected as false positives. However, we could undoubtedly distinguish between the torcular herophili region and cerebral gray matter on FLAIR MRI."_
+
+2. Patients with prior brain surgery and/or areas of gliosis or obvious structural asymmetry on regular MRI sequences will produce large regions of asymmetry on the automated report. 
 
 
 ### EDITING THE REPORT
